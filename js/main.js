@@ -48,6 +48,14 @@ const blogPosts = [
     date: '2026-05-08',
     readTime: '15 分钟',
   },
+  {
+    id: 7,
+    title: '零成本搭建 AI 内容网站全记录',
+    tag: '学习',
+    excerpt: '用 Claude 生成网站、GitHub 管理代码、Vercel 自动部署——打造一个纯静态内容站点的完整过程。',
+    date: '2026-05-21',
+    readTime: '10 分钟',
+  },
 ];
 
 const tools = [
