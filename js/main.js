@@ -2,6 +2,7 @@
 const blogPosts = [
   {
     id: 1,
+    file: true,
     title: '2026 年 AI 学习路线图：从入门到精通',
     tag: '学习',
     excerpt: '系统化的 AI 学习路径，涵盖数学基础、机器学习、深度学习到大语言模型的完整学习路线。',
@@ -50,6 +51,7 @@ const blogPosts = [
   },
   {
     id: 7,
+    file: true,
     title: '零成本搭建 AI 内容网站全记录',
     tag: '学习',
     excerpt: '用 Claude 生成网站、GitHub 管理代码、Vercel 自动部署——打造一个纯静态内容站点的完整过程。',
@@ -111,6 +113,9 @@ const tools = [
 
 // ===== Render Functions =====
 function createPostCard(post) {
+  const link = post.file
+    ? `<a href="/blog/post-${post.id}.html" class="card-link">阅读全文 →</a>`
+    : '';
   return `
     <article class="card">
       <span class="card-tag">${post.tag}</span>
@@ -120,7 +125,7 @@ function createPostCard(post) {
         <span>${post.date}</span>
         <span>${post.readTime}</span>
       </div>
-      <a href="/blog/post-${post.id}.html" class="card-link">阅读全文 →</a>
+      ${link}
     </article>
   `;
 }
@@ -162,7 +167,7 @@ function loadPosts(filter = 'all') {
 function loadLatestPosts() {
   const container = document.getElementById('latestPosts');
   if (!container) return;
-  container.innerHTML = blogPosts.slice(0, 3).map(createPostCard).join('');
+  container.innerHTML = blogPosts.filter(p => p.file).slice(0, 3).map(createPostCard).join('');
 }
 
 // ===== Load Tools =====
