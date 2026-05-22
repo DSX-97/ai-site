@@ -184,7 +184,11 @@ function loadTools(filter = 'all') {
     return;
   }
 
+  // Remove cards briefly so re-enter animation plays
+  container.style.animation = 'none';
+  container.offsetHeight; // force reflow
   container.innerHTML = filtered.map(createToolCard).join('');
+  container.style.animation = '';
 }
 
 // ===== Filter Bar =====
@@ -199,6 +203,80 @@ function setupFilters(barId, loadFn) {
     bar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     loadFn(btn.dataset.filter);
+  });
+}
+
+// ===== Dark Mode =====
+function getPreferredTheme() {
+  const stored = localStorage.getItem('theme');
+  if (stored) return stored;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+}
+
+function setupThemeToggle() {
+  const toggle = document.querySelector('.theme-toggle');
+  if (!toggle) return;
+
+  // Apply saved/preferred theme
+  setTheme(getPreferredTheme());
+
+  toggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  });
+
+  // Listen for system changes (only if user hasn't stored a preference)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      setTheme(e.matches ? 'dark' : 'light');
+    }
+  });
+}
+
+// ===== Scroll Animations =====
+function setupScrollAnimations() {
+  const els = document.querySelectorAll('.fade-in');
+  if (els.length === 0) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -40px 0px',
+  });
+
+  els.forEach((el) => observer.observe(el));
+}
+
+// ===== Back to Top =====
+function setupBackToTop() {
+  const btn = document.getElementById('backToTop');
+  if (!btn) return;
+
+  let ticking = false;
+  const handleScroll = () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        btn.classList.toggle('visible', window.scrollY > 400);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 }
 
@@ -231,7 +309,6 @@ function setupNewsletter() {
 
     if (!email) return;
 
-    // Placeholder — 替换为真实的 API 端点
     const btn = form.querySelector('.btn');
     const originalText = btn.textContent;
     btn.textContent = '已订阅！';
@@ -249,6 +326,9 @@ function setupNewsletter() {
 document.addEventListener('DOMContentLoaded', () => {
   setupMobileToggle();
   setupNewsletter();
+  setupThemeToggle();
+  setupBackToTop();
+  setupScrollAnimations();
 
   // Page-specific init
   loadLatestPosts();
