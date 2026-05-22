@@ -3,27 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="零成本搭建 AI 内容网站全记录：Claude 生成 → GitHub 保存 → Vercel 上线的完整工作流">
-  <title>零成本搭建 AI 内容网站全记录 - AI 新知</title>
+  <meta name="description" content="零成本搭建个人博客全记录 - 老周">
+  <title>零成本搭建个人博客全记录 - 老周</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <header class="site-header">
     <nav class="navbar container">
-      <a href="/" class="logo">AI<span>新知</span></a>
+      <a href="/" class="logo">老<span class="logo-accent">周</span><span class="logo-thin">·不服输</span></a>
       <ul class="nav-links" id="navLinks">
         <li><a href="/">首页</a></li>
-        <li><a href="/blog.html" class="active">博客</a></li>
-        <li><a href="/tools.html">工具</a></li>
+        <li><a href="/blog.html" class="active">文章</a></li>
+        <li><a href="/tools.html">资源</a></li>
         <li><a href="/about.html">关于</a></li>
       </ul>
       <div class="nav-actions">
         <button class="theme-toggle" aria-label="切换暗色模式">
-          <span class="icon-sun" aria-hidden="true">☀️</span>
-          <span class="icon-moon" aria-hidden="true">🌙</span>
+          <span class="icon-sun" aria-hidden="true">☀</span>
+          <span class="icon-moon" aria-hidden="true">☽</span>
         </button>
         <button class="mobile-toggle" id="mobileToggle" aria-label="菜单">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -36,153 +36,109 @@
     </nav>
   </header>
 
-  <article class="blog-article">
-    <div class="card-meta">
-      <span>2026-05-21</span>
-      <span>10 分钟阅读</span>
-      <span>学习</span>
+  <article class="blog-article fade-in">
+    <div class="container">
+      <div class="card-meta">
+        <span>2026-05-21</span>
+        <span>10 分钟阅读</span>
+        <span>AI 学习</span>
+      </div>
+      <h1>零成本搭建个人博客全记录</h1>
+
+      <div class="author-note">
+        <strong>关于本文：</strong>一个 50 岁的建筑人，用 AI 帮忙、GitHub 管理、Vercel 部署，零成本搞定自己的博客站。不是技术教程，是我的实操记录。
+      </div>
+
+      <p>我想有一个自己的博客。</p>
+      <p>不是为了当博主、赚流量。是为了有一个地方，能把我维权的过程、学 AI 的笔记、创业的想法整理起来。不是为了给别人看——虽然有人看当然好——首先是为了给自己一个交代。</p>
+      <p>但我不会写代码。一个建筑设计师，会画图、会管项目、会用 CAD，但 HTML 和 CSS 对我来说是天书。</p>
+      <p>然后我发现了 AI 写代码这件事。</p>
+
+      <h2>为什么不做公众号</h2>
+      <p>朋友建议我开个公众号就行。我考虑过，但有几个原因让我决定还是搞个独立站：</p>
+      <ul>
+        <li><strong>所有权</strong>——公众号的内容在微信的池子里，说封就封。自己的网站，内容在自己手上。</li>
+        <li><strong>自由度</strong>——想写什么写什么，没有审核、没有敏感词、没有流量算法的绑架。</li>
+        <li><strong>学习价值</strong>——建站本身就是一次 AI 实操。一个 50 岁的人，学学怎么用 AI 建网站，这件事本身就很有意思。</li>
+        <li><strong>成本为零</strong>——代码 AI 写，托管 GitHub 免费，部署 Vercel 免费。除了域名可能花几十块，其他全是零成本。</li>
+      </ul>
+
+      <h2>用到的工具</h2>
+      <ul>
+        <li><strong>Claude Code</strong>——AI 编程助手，帮我写 HTML、CSS、JS</li>
+        <li><strong>GitHub</strong>——免费代码托管，版本管理</li>
+        <li><strong>Vercel</strong>——免费部署，自动从 GitHub 同步更新</li>
+        <li><strong>VS Code</strong>——写代码的编辑器（其实大部分代码是 AI 写的，我只需要告诉它我要什么）</li>
+      </ul>
+
+      <h2>搭建过程（非技术版）</h2>
+      <p>我不打算写技术教程——网上已经有太多更好的教程了。我只说说一个非技术人员做这件事的真实感受。</p>
+
+      <h3>第一步：告诉 AI 我想要什么</h3>
+      <p>我跟 Claude 说：帮我做一个个人网站，要有首页、关于页、博客列表，设计要简洁大方。它就开始生成了。</p>
+      <p>第一次看到它刷刷刷地写出几十行代码的时候，我是真的有点震惊。不是因为技术多厉害——而是因为我发现，<strong>我只需要说人话，它就能干活了。</strong></p>
+
+      <h3>第二步：不满意就改</h3>
+      <p>设计风格不喜欢？改。布局不对？改。颜色太冷？换暖色。全部用自然语言跟 AI 沟通——"把蓝色改成深一点的颜色"、"卡片加个 hover 阴影效果"、"字体大一点"。</p>
+      <p>整个过程就像在跟一个很听话的设计师沟通。不用学 CSS、不用查文档，说出你想要的效果，它帮你实现。</p>
+
+      <h3>第三步：一键部署</h3>
+      <p>代码写好以后，推送到 GitHub，Vercel 自动部署。每次更新，推送上去等一两分钟就能看到效果。</p>
+      <p>从开始建站到上线，用了不到一天。而我一行的原生代码都没写。</p>
+
+      <h2>一个建筑人的体会</h2>
+      <p>做了二十年建筑设计，我发现建网站和做建筑在本质上是一样的：</p>
+      <ul>
+        <li><strong>先有结构，再有装饰。</strong>——HTML 是框架，CSS 是外立面，JS 是设备系统</li>
+        <li><strong>迭代是最好的设计方式。</strong>——先上线、再优化。别等"完美"再发布</li>
+        <li><strong>工具不重要，想法重要。</strong>——以前是 CAD 和 BIM，现在是 AI。工具一直在变，但你要做什么，这个只有你自己知道</li>
+      </ul>
+
+      <h2>下一步</h2>
+      <p>博客搭好了，接下来就是认真写内容。计划中的系列：</p>
+      <ul>
+        <li><strong>维权日记</strong>——记录劳动仲裁的全过程</li>
+        <li><strong>AI 学习笔记</strong>——一个中年人的 AI 入门记录</li>
+        <li><strong>创业思考</strong>——中年创业的想法和准备</li>
+        <li><strong>研究生生活</strong>——重返校园的真实体验</li>
+      </ul>
+      <p>如果你也是这个年纪、也在学新东西、或者也在经历人生的转折——欢迎常来看看。咱们这个岁数的人，不服输。</p>
+
+      <div class="author-note" style="margin-top:2rem;">
+        <strong>老周：</strong>年近五十的建筑人。正在维权、读研、学AI、准备创业。<strong>不服输。</strong>
+      </div>
     </div>
-    <h1>零成本搭建 AI 内容网站全记录</h1>
-    <p>用 AI 生成网站、GitHub 管理代码、Vercel 自动部署——打造一个纯静态内容站点的完整过程。</p>
-
-    <h2>为什么做这个网站</h2>
-    <p>AI 技术发展太快了，每天都有新工具、新模型、新应用出现。我想做一个中文的 AI 资源站，把学习笔记、工具推荐、实验项目整理起来，帮自己和更多人跟上这个节奏。</p>
-    <p>目标很简单：<strong>零成本、快速上线、容易维护。</strong></p>
-
-    <h2>技术选型</h2>
-    <p>第一版没有用复杂的框架，纯静态站点 + CDN 部署就够了：</p>
-    <ul>
-      <li><strong>前端：</strong> 纯 HTML + CSS + JavaScript</li>
-      <li><strong>代码管理：</strong> GitHub</li>
-      <li><strong>部署：</strong> Vercel（免费版）</li>
-      <li><strong>域名：</strong> 先用 xxx.vercel.app，后续换自定义域名</li>
-    </ul>
-    <p>为什么不用框架？第一版核心是验证内容和需求，HTML/CSS/JS 零依赖、零构建，改了就生效。等后续内容多了再升级到 Astro 或 Next.js 也不迟。</p>
-
-    <h2>项目结构</h2>
-    <pre>
-ai-site/
-├── index.html      # 首页
-├── blog.html       # 博客列表
-├── tools.html      # 工具导航
-├── about.html      # 关于页
-├── blog/           # 博文
-├── css/style.css   # 全局样式
-└── js/main.js      # 交互逻辑</pre>
-    <p>结构清晰，每个页面职责明确。CSS 和 JS 是全局共享的，新增页面时只需要引用它们。</p>
-
-    <h2>设计风格</h2>
-    <p>没有用 UI 组件库，所有样式自己写 CSS 变量，好处是轻量和灵活：</p>
-    <ul>
-      <li>紫蓝渐变作为品牌色（--color-primary: #6366f1）</li>
-      <li>响应式布局，移动端适配</li>
-      <li>卡片式 UI，内容清晰易读</li>
-      <li>粘性导航栏 + 毛玻璃效果</li>
-      <li>暗色/亮色兼容（纯白底色 + 柔和阴影）</li>
-    </ul>
-
-    <h2>工作流：从编辑到上线</h2>
-    <p>整个流程只有三步，全程自动化：</p>
-
-    <h3>第一步：编辑内容</h3>
-    <p>网站的博客文章和工具数据都定义在 <code>js/main.js</code> 中，想加一篇新博文只需要在 <code>blogPosts</code> 数组里添加一条记录：</p>
-    <pre>const blogPosts = [
-  {
-    id: 7,
-    title: '新文章标题',
-    tag: '学习',
-    excerpt: '文章简介...',
-    date: '2026-05-21',
-    readTime: '5 分钟',
-  },
-  // ...
-];</pre>
-    <p>同时可以在 <code>blog/</code> 目录下新建一个 HTML 文件作为完整博文。（早期内容不多时，也可以直接用 <code>excerpt</code> 字段做摘要展示，点击再展开。）</p>
-
-    <h3>第二步：提交到 GitHub</h3>
-    <p>编辑器改完后，终端跑三条命令：</p>
-    <pre>cd ~/projects/ai-site
-git add .
-git commit -m "添加新博文：xxx"
-git push</pre>
-    <p><code>git add .</code> 暂存所有改动，<code>git commit</code> 打上快照，<code>git push</code> 推送到 GitHub。</p>
-
-    <h3>第三步：Vercel 自动部署</h3>
-    <p>只要 GitHub 仓库连接了 Vercel，每次 <code>git push</code> 都会自动触发重新部署。Vercel 会拉取最新代码，部署到全球 CDN，一般 1-2 分钟生效。你什么都不用做，刷新网页就能看到更新。</p>
-
-    <h2>成本明细</h2>
-    <p>这可能是最让我意外的地方——几乎零成本：</p>
-    <ul>
-      <li><strong>GitHub：</strong> 免费（公开仓库）</li>
-      <li><strong>Vercel：</strong> 免费（每月 100GB 带宽，个人站完全够用）</li>
-      <li><strong>域名：</strong> 先用 xxx.vercel.app，后续换 .com 约 70 元/年</li>
-      <li><strong>AI 辅助：</strong> Claude Code 生成网站结构和内容</li>
-    </ul>
-    <p>如果有自定义域名的需求，一年总成本不到 100 块钱。</p>
-
-    <h2>反爬措施</h2>
-    <p>内容站免不了被采集，早期可以做一些低成本防护：</p>
-    <ul>
-      <li>接入 Cloudflare 免费版，开启 Bot Fight Mode</li>
-      <li>关键内容用 JavaScript 动态加载，增加采集成本</li>
-      <li>定期查看 Vercel Analytics 的流量来源</li>
-    </ul>
-    <p>对于个人站来说，做到让采集者需要专门写脚本就够了——不值得为你的内容投入这个精力，就是最好的防护。</p>
-
-    <h2>未来计划</h2>
-    <ul>
-      <li><strong>1 周：</strong> 网站上线，基础内容填充</li>
-      <li><strong>1 个月：</strong> 持续更新，每天短内容 + 每周深度文章</li>
-      <li><strong>3 个月：</strong> 做 SEO，积累自然搜索流量</li>
-    </ul>
-    <p>技术上的升级计划：</p>
-    <ul>
-      <li>从纯 HTML 迁移到 Astro（组件化、Markdown 写作）</li>
-      <li>接入邮件订阅（Mailchimp 等）</li>
-      <li>添加搜索功能</li>
-    </ul>
-
-    <h2>总结</h2>
-    <p>这个流程最让我喜欢的地方是：<strong>写内容 -> 写代码 -> 推送 -> 上线</strong>，整个链路不超过 5 分钟就能完成一次更新。没有服务器需要维护，没有数据库需要操心，没有构建部署的等待时间。</p>
-    <p>对于想做个人内容网站的朋友，这是一个性价比极高的起点。等流量起来了，内容积累够了，再逐步升级也不晚。</p>
-    <p>最重要的不是技术栈，是 <strong>开始写</strong>。</p>
   </article>
 
   <footer class="site-footer">
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="/" class="logo">AI<span>新知</span></a>
-          <p>探索 AI 的无限可能，每天更新 AI 学习、工具、实验与资源。</p>
+          <a href="/" class="logo">老<span class="logo-accent">周</span><span class="logo-thin">·不服输</span></a>
+          <p>年近五十的建筑人。维权、读研、学AI、准备创业。不服输。</p>
         </div>
         <div class="footer-col">
           <h4>页面</h4>
           <ul>
             <li><a href="/">首页</a></li>
-            <li><a href="/blog.html">博客</a></li>
-            <li><a href="/tools.html">工具</a></li>
+            <li><a href="/blog.html">文章</a></li>
+            <li><a href="/tools.html">资源</a></li>
             <li><a href="/about.html">关于</a></li>
           </ul>
         </div>
         <div class="footer-col">
           <h4>分类</h4>
           <ul>
+            <li><a href="/blog.html">维权手记</a></li>
             <li><a href="/blog.html">AI 学习</a></li>
-            <li><a href="/tools.html">AI 工具</a></li>
-            <li><a href="/blog.html">AI 实验</a></li>
-            <li><a href="/blog.html">资源分享</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>链接</h4>
-          <ul>
-            <li><a href="/about.html">关于本站</a></li>
-            <li><a href="/about.html#contact">联系我们</a></li>
+            <li><a href="/blog.html">创业思考</a></li>
+            <li><a href="/blog.html">研究生生活</a></li>
           </ul>
         </div>
       </div>
       <div class="footer-bottom">
-        <span>&copy; 2026 AI 新知. All rights reserved.</span>
+        <span>&copy; 2026 老周</span>
+        <span class="footer-motto">不服输</span>
       </div>
     </div>
   </footer>
