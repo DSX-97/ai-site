@@ -888,6 +888,68 @@ img {
   letter-spacing: 1px;
 }
 
+/* ===== Journal / 心情笔记 ===== */
+.journal-section {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 20px var(--color-shadow);
+}
+
+.journal-section .section-header {
+  margin-bottom: 2rem;
+}
+
+.journal-section .section-header h2 {
+  font-size: 1.4rem;
+}
+
+.journal-entry {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.journal-entry:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.journal-entry h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.journal-entry p {
+  color: var(--color-text-secondary);
+  line-height: 2;
+  font-size: 0.93rem;
+  margin-bottom: 0.5rem;
+}
+
+.journal-entry strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.journal-motto {
+  text-align: center;
+  font-weight: 700 !important;
+  color: var(--color-primary) !important;
+  font-size: 1rem !important;
+  letter-spacing: 2px;
+  padding: 1rem 0 0;
+}
+
 /* ===== Footer ===== */
 .site-footer {
   border-top: 1px solid var(--color-border);

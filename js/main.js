@@ -1,113 +1,126 @@
 // ===== Data =====
 const blogPosts = [
   {
-    id: 1,
+    id: 7,
     file: true,
-    title: '维权日记（一）：国企六年，一场竞聘让我看清了什么',
-    tag: '维权',
-    excerpt: '从规划设计中心总经理到被"优化"对象，我用一纸法律文书回应了公司三年的调岗降薪。这不是一篇诉苦文，是我维权路上第一课。',
-    date: '2026-05-20',
+    title: '零成本搭建个人博客全记录',
+    tag: 'AI 资源',
+    excerpt: '用 Claude 生成网站、GitHub 管理代码、Vercel 自动部署——一个 50 岁的建筑人搞定自己博客的完整过程。',
+    date: '2026-05-21',
+    readTime: '10 分钟',
+  },
+  {
+    id: 8,
+    title: 'RAG 到底是什么？一个建筑人的理解',
+    tag: 'AI 心得',
+    excerpt: '不用技术术语，用建筑人的方式理解 RAG——从什么是向量数据库到怎么搭一个自己的知识库，这是我学 RAG 的心得。',
+    date: '2026-05-22',
     readTime: '8 分钟',
+  },
+  {
+    id: 9,
+    title: '我每天都在用的 5 个 AI 工具',
+    tag: 'AI 资源',
+    excerpt: 'Claude、ChatGPT、Perplexity、Cursor……这些工具每天帮我写文档、学新知识、搭原型。推荐给每一位想用AI提效的朋友。',
+    date: '2026-05-23',
+    readTime: '7 分钟',
   },
   {
     id: 2,
     title: '50 岁学 AI 晚不晚？我的三个月入门总结',
-    tag: 'AI',
+    tag: 'AI 心得',
     excerpt: '一个建筑专业出身、离开校园二十多年的人，从零开始学AI的真实经历。踩过的坑、用对的方法、最推荐的工具。',
     date: '2026-05-18',
     readTime: '6 分钟',
   },
   {
-    id: 3,
-    title: '我和二十多岁的同学坐在一起读研',
-    tag: '生活',
-    excerpt: '重返校园的第一周，我就坐在比自己小二十多岁的同学中间。说说这种奇妙的感觉，以及为什么这个年纪读书反而更有效率。',
-    date: '2026-05-15',
-    readTime: '5 分钟',
-  },
-  {
-    id: 4,
-    title: '中年创业想法的萌芽：从被逼到主动',
-    tag: '创业',
-    excerpt: '当公司告诉你"你该走了"，你面前只有两条路。我选了那条更难但也更有意思的路——自己当老板。',
-    date: '2026-05-13',
-    readTime: '7 分钟',
-  },
-  {
-    id: 5,
-    title: '劳动仲裁全流程记录：我学到的五件事',
-    tag: '维权',
-    excerpt: '从提交申请到开庭，一个普通人的劳动仲裁完整记录。不煽情，只讲实操——证据怎么准备、流程怎么走、心态怎么稳。',
-    date: '2026-05-10',
-    readTime: '10 分钟',
-  },
-  {
     id: 6,
     title: '我用 AI 搭建了一个法律文书助手',
-    tag: 'AI',
+    tag: 'AI 作品',
     excerpt: '为自己的维权案件写法律文书时，我发现 AI 可以帮大忙。从提示词到工作流，手把手教你用 AI 处理法律文档。',
     date: '2026-05-08',
     readTime: '12 分钟',
-  },
-  {
-    id: 7,
-    file: true,
-    title: '零成本搭建个人博客全记录',
-    tag: 'AI',
-    excerpt: '用 Claude 生成网站、GitHub 管理代码、Vercel 自动部署——一个 50 岁的建筑人搞定自己博客的完整过程。',
-    date: '2026-05-21',
-    readTime: '10 分钟',
   },
 ];
 
 const tools = [
   {
     name: 'Claude',
-    category: 'AI',
-    desc: 'Anthropic 出品的高级 AI 助手，擅长编程、写作、分析和创意任务。我用来写博客、学编程、搭自动化。',
+    category: '对话助手',
+    desc: 'Anthropic 出品的高级 AI 助手，擅长编程、写作、分析和创意任务。我每天用得最多的 AI 工具。',
     url: 'https://claude.ai',
   },
   {
     name: 'ChatGPT',
-    category: 'AI',
-    desc: '通用对话 AI，支持多模态和插件。日常学习、法律咨询、文档起草都能用上。',
+    category: '对话助手',
+    desc: '通用对话 AI，支持多模态和插件。日常头脑风暴、文档起草的好帮手。',
     url: 'https://chat.openai.com',
   },
   {
-    name: '中国法律服务网',
-    category: '法律',
-    desc: '司法部官方法律援助平台，提供免费法律咨询、文书模板和案例检索。维权必备。',
-    url: 'https://www.12348.gov.cn',
+    name: 'Perplexity',
+    category: '对话助手',
+    desc: 'AI 搜索引擎，带引用来源的实时回答。查资料比传统搜索高效太多。',
+    url: 'https://www.perplexity.ai',
   },
   {
-    name: '中国裁判文书网',
-    category: '法律',
-    desc: '公开裁判文书数据库，可以检索类似案件的判决结果，为维权提供参考。',
-    url: 'https://wenshu.court.gov.cn',
+    name: 'Kimi',
+    category: '对话助手',
+    desc: '国产长文本 AI，一次能处理几十万字的文档。我用来读论文、分析合同。',
+    url: 'https://kimi.moonshot.cn',
   },
   {
-    name: '中国大学MOOC',
-    category: '学习',
-    desc: '国内最大的在线课程平台，有大量名校免费课程。我在这里补法学和计算机基础。',
-    url: 'https://www.icourse163.org',
+    name: 'Cursor',
+    category: '编程开发',
+    desc: 'AI 优先的代码编辑器，内置对话式编程助手。我学写代码全靠它。',
+    url: 'https://cursor.sh',
   },
   {
-    name: '知网',
-    category: '学习',
-    desc: '学术论文数据库，写论文查资料的首选。研究生阶段的必备工具。',
-    url: 'https://www.cnki.net',
+    name: 'GitHub Copilot',
+    category: '编程开发',
+    desc: 'VS Code 里的 AI 代码补全插件，写代码时自动提示，效率翻倍。',
+    url: 'https://github.com/features/copilot',
+  },
+  {
+    name: 'Claude Code',
+    category: '编程开发',
+    desc: '终端里的 AI 编程助手，能读整个项目、改代码、跑命令。这个网站就是用 Claude Code 做的。',
+    url: 'https://claude.ai/code',
   },
   {
     name: 'Notion',
-    category: '效率',
-    desc: 'All-in-one 笔记和项目管理工具。我用它记课堂笔记、管理维权进度、梳理创业想法。',
+    category: '内容创作',
+    desc: 'AI 增强笔记工具，写文档、做计划、记笔记一站式搞定。我的知识库就在 Notion 里。',
     url: 'https://www.notion.so',
   },
   {
+    name: 'Gamma',
+    category: '内容创作',
+    desc: 'AI 生成演示文稿的工具，输入主题就能生成漂亮的 PPT。做分享汇报太方便了。',
+    url: 'https://gamma.app',
+  },
+  {
     name: '飞书',
-    category: '效率',
-    desc: '字节跳动出品的一体化办公平台。文档、会议、任务管理一站式解决。',
+    category: '内容创作',
+    desc: '字节跳动出品的一体化办公平台。文档协作、会议、知识库都好用。',
     url: 'https://www.feishu.cn',
+  },
+  {
+    name: 'Midjourney',
+    category: '设计创意',
+    desc: 'AI 图像生成工具，输入描述就能生成高质量图片。我用来做博客配图和设计灵感。',
+    url: 'https://www.midjourney.com',
+  },
+  {
+    name: 'Canva',
+    category: '设计创意',
+    desc: '在线设计平台，内置 AI 功能。非设计人员也能做出好看的海报和封面图。',
+    url: 'https://www.canva.cn',
+  },
+  {
+    name: 'Suno',
+    category: '设计创意',
+    desc: 'AI 音乐生成工具，用文字描述就能生成音乐。玩一玩很有意思。',
+    url: 'https://suno.com',
   },
 ];
 
@@ -132,10 +145,10 @@ function createPostCard(post) {
 
 function createToolCard(tool) {
   const icons = {
-    'AI': '🤖',
-    '法律': '⚖',
-    '学习': '📖',
-    '效率': '⚡',
+    '对话助手': '💬',
+    '编程开发': '💻',
+    '内容创作': '✍',
+    '设计创意': '🎨',
   };
   return `
     <div class="card tool-card" data-category="${tool.category}">
@@ -167,7 +180,7 @@ function loadPosts(filter = 'all') {
 function loadLatestPosts() {
   const container = document.getElementById('latestPosts');
   if (!container) return;
-  container.innerHTML = blogPosts.filter(p => p.file).slice(0, 3).map(createPostCard).join('');
+  container.innerHTML = blogPosts.slice(0, 3).map(createPostCard).join('');
 }
 
 // ===== Load Tools =====
