@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="用 Claude 卸载 360 安全卫士全记录 - 老舟">
+  <title>用 AI 卸载 360 安全卫士 - 老舟</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container">
+      <a href="/" class="logo">老<span class="logo-accent">舟</span><span class="logo-thin">·不服输</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/">首页</a></li>
+        <li><a href="/blog.html" class="active">文章</a></li>
+        <li><a href="/tools.html">资源</a></li>
+        <li><a href="/about.html">关于</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" aria-label="切换暗色模式">
+          <span class="icon-sun" aria-hidden="true">☀</span>
+          <span class="icon-moon" aria-hidden="true">☽</span>
+        </button>
+        <button class="mobile-toggle" id="mobileToggle" aria-label="菜单">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <article class="blog-article fade-in">
+    <div class="container">
+      <div class="card-meta">
+        <span>2026-05-24</span>
+        <span>12 分钟阅读</span>
+        <span>AI 心得</span>
+      </div>
+      <h1>用 AI 卸载 360 安全卫士：一次完全由 AI 自主完成的操作</h1>
+
+      <div class="author-note">
+        <strong>写在前面：</strong>这篇文章不是技术教程，而是一次真实记录——我坐在电脑前，对着满屏弹窗忍无可忍，然后打开 Claude 说了一句话。接下来的所有事情，都是 AI 自己完成的。
+      </div>
+
+      <h2>为什么卸载</h2>
+      <p>忍无可忍。</p>
+      <ul>
+        <li><strong>广告弹窗泛滥</strong>——开机弹、关机弹、浏览器被篡改弹、游戏加速弹、天气弹、热点弹……关了一个又来一个，防不胜防。</li>
+        <li><strong>擅自安装软件</strong>——没有任何明确告知，后台自动下载安装 360 全家桶：360 浏览器、360 压缩、360 桌面助手等等。卸载后过段时间又偷偷装回来。</li>
+        <li><strong>侵犯式产品逻辑</strong>——作为安全软件，它的自保护机制不是在防病毒，而是在防用户。这是安全软件"异化"的典型案例——本该服务于用户的工具，变成了凌驾于用户之上的枷锁。</li>
+      </ul>
+
+      <p>所以，必须彻底删除。</p>
+
+      <hr>
+
+      <h2>开头只是一句话</h2>
+      <p>我没有去百度搜"360卸载工具"，没有去论坛发帖求助，也没有下载什么"卸载全家桶"——那些东西本身可能就是流氓软件。</p>
+      <p>我打开 Claude Code（终端里的 AI 编程助手），打了一行字：</p>
+      <blockquote>"你能帮我删掉360安全卫士吗？"</blockquote>
+      <p>然后，AI 完成了剩下的一切。</p>
+
+      <h2>第一阶段：侦察——AI 自己摸索情况</h2>
+      <p>Claude 没有直接动手卸载——它先调用系统工具，摸清 360 的底细：</p>
+      <ul>
+        <li>扫描注册表，找到 360 的安装路径和卸载信息</li>
+        <li>检查 Program Files 目录，确认安装位置</li>
+        <li>查看进程列表，发现 <code>safesvr.exe</code> 和 <code>ZhuDongFangYu</code>（主动防御服务）正在运行</li>
+        <li>识别出 360 具有内核级自保护能力</li>
+      </ul>
+      <p>几分钟前我还不知道怎么描述问题，几分钟后 AI 已经把敌人的底牌全摸清了。</p>
+
+      <h2>第二阶段：硬碰硬——常规手段全部被拦截</h2>
+      <p>Claude 开始尝试常规卸载方法。每一步都在实时观察结果，然后自动调整策略：</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>尝试的方法</th>
+            <th>结果</th>
+            <th>AI 的反应</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Stop-Process</code> / <code>taskkill /F</code></td>
+            <td>"拒绝访问"</td>
+            <td>换方案，不纠结</td>
+          </tr>
+          <tr>
+            <td><code>sc stop/config/delete</code></td>
+            <td>"拒绝访问"</td>
+            <td>换方案，不纠结</td>
+          </tr>
+          <tr>
+            <td><code>Stop-Service -Force</code></td>
+            <td>"拒绝访问"</td>
+            <td>换方案，不纠结</td>
+          </tr>
+          <tr>
+            <td>注册表禁用服务</td>
+            <td>"拒绝访问"</td>
+            <td>换方案，不纠结</td>
+          </tr>
+          <tr>
+            <td><code>fltmc unload</code> 卸载过滤驱动</td>
+            <td>"拒绝访问"</td>
+            <td>换方案，不纠结</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>每次失败后，Claude 不需要我干预，自动分析错误信息，判断 360 的保护机制，然后尝试下一种方法。这种试错迭代如果由人类手动操作，至少需要半小时反复尝试和搜索；在 AI 这里只需要几十秒。</p>
+      <p>而且 AI 有一个人类没有的优势——<strong>它不会因为反复被拒绝而烦躁。</strong>人类可能试了三次就上火砸键盘了，AI 试了十次仍然冷静分析错误码。</p>
+
+      <h2>第三阶段：多 Agent 并行探索</h2>
+      <p>遇到僵局后，Claude 做了一件很聪明的事——它启动了多个 AI 子进程（Agent），从不同方向同时寻找突破口：</p>
+      <ul>
+        <li>一个子进程搜查 360 安装目录，寻找卸载程序和配置文件</li>
+        <li>另一个子进程查询系统服务和驱动的加载情况</li>
+        <li>主进程收集所有信息，综合分析，制定策略</li>
+      </ul>
+      <p><strong>多 Agent 并行工作</strong>，这在传统操作中很难做到——一个人不可能同时从多个方向推进。</p>
+
+      <h2>第四阶段：突破——组合拳</h2>
+      <p>综合所有信息后，Claude 找到了突破口：</p>
+
+      <ol>
+        <li><strong>官方卸载程序自己有权卸载自己</strong>——360 的 <code>uninst.exe</code> 不受自保护限制。Claude 以管理员身份启动它，让 360"自杀"。</li>
+        <li><strong>保护降级后趁胜追击</strong>——官方卸载器运行后，保护机制降级。Claude 趁机停止剩余服务、清理注册表。</li>
+        <li><strong>安排重启时删除</strong>——对于还在被内核驱动锁定的文件，Claude 利用了 Windows 的 <code>PendingFileRenameOperations</code> 机制，安排在系统启动早期、驱动加载前自动删除。</li>
+      </ol>
+
+      <p>整个过程就像一场精密的战术行动——正面佯攻、侧翼突破、最后清扫战场。而这一切的指挥官，是一个 AI。</p>
+
+      <h2>第五阶段：AI 自己写了个卸载工具</h2>
+      <p>清理完成后，我追加了一句话：</p>
+      <blockquote>"把卸载360的过程，编写成一个小程序，exe文件格式的。"</blockquote>
+      <p>Claude 的处理流程完全是自主的：</p>
+      <ol>
+        <li><strong>检查环境</strong>——发现 Windows 自带 C# 编译器 <code>csc.exe</code>，无需安装任何开发工具</li>
+        <li><strong>方案评估</strong>——C# vs Python vs AutoHotkey，选 C# 因为零依赖、原生支持</li>
+        <li><strong>写代码</strong>——把刚才的卸载流程转为 C# 源码，加入 UAC 提权、进度显示</li>
+        <li><strong>兼容适配</strong>——发现编译器只支持 C# 5.0，自动降级语法，删除不兼容的特性</li>
+        <li><strong>编译调试</strong>——遇到路径问题自动诊断，改用 PowerShell 调用编译器</li>
+        <li><strong>编译成功</strong>——生成 11.5 KB 的独立 EXE，嵌入管理员清单</li>
+        <li><strong>清理现场</strong>——删除所有临时脚本文件</li>
+      </ol>
+
+      <p>从我说"写个 exe"到拿到成品，不到 5 分钟。传统开发方式：开 IDE → 建项目 → 写代码 → 调试 → 编译 → 打包，至少二十分钟起步。</p>
+
+      <div class="download-box">
+        <div class="info">
+          <strong>Uninstall360.exe</strong>
+          <span>11.5 KB · 独立运行 · 需管理员权限</span>
+        </div>
+        <a href="/downloads/Uninstall360.exe" class="btn btn-accent" download>下载卸载工具 ↓</a>
+      </div>
+
+      <p>这个小程序会自动完成我们刚才所有的操作：停止进程→禁用服务→运行官方卸载→删除目录→清理注册表→安排重启删除。双击运行即可，你只需要点一下 UAC 确认。</p>
+
+      <hr>
+
+      <h2>回过头来看：AI 的自主性意味着什么</h2>
+
+      <p>这次经历让我对 AI 的能力有了全新的认识。不是因为它写了多少代码，而是因为它展现了几个非常"不工具"的特性：</p>
+
+      <h3>1. 自主规划</h3>
+      <p>Claude 不是机械地执行指令。在理解了"卸载 360"这个目标后，它自己拆解出了完整的任务链：侦察→尝试→分析→调整→执行→固化。每个子任务的内容、顺序、成功标准都由 AI 自行判断。</p>
+
+      <h3>2. 试错与适应</h3>
+      <p>面对 360 的层层拦截，Claude 像人类一样不断尝试、失败、换方案。区别在于速度——人类半小时的试错过程，AI 几十秒完成。而且 AI 不会因为"被拒绝"而产生挫败感。</p>
+
+      <h3>3. 工具组合能力</h3>
+      <p>Claude 自主选择了 PowerShell、sc.exe、takeown/icacls、C# 编译器、Windows 注册表机制等工具组合。没有使用任何非标准的外部工具，全部依托系统自带能力。</p>
+
+      <h3>4. 结果固化</h3>
+      <p>最让我印象深刻的一点——Claude 不仅完成了"当下"的任务（卸载 360），还能将整个操作过程<strong>固化为一个可重复使用的工具</strong>（EXE 程序）。这意味着解决方案不再依赖 AI 的实时介入，以后双击就能用。</p>
+
+      <hr>
+
+      <h2>一点感慨</h2>
+
+      <p>如果你十年前告诉我，会有这么一天——你坐在电脑前说"帮我把这个流氓软件删了"，AI 就自己动手把它灭了，还顺手给你编译了个卸载器——我一定觉得你在讲科幻故事。</p>
+
+      <p>现在来看，这只是一个普通的星期三。</p>
+
+      <p>那些广告弹窗终于没有了。那些偷偷装回来的全家桶终于不会再回来了。而我什么都没做——除了打了一行字。</p>
+
+      <p>这就是 2026 年的 AI：<strong>你不需要知道怎么做，只需要知道要做什么。</strong></p>
+
+      <div class="author-note" style="margin-top:2rem;">
+        <strong>老舟：</strong>50 岁的建筑人，正在用 AI 给自己多一条路。<strong>不服输。</strong>
+      </div>
+    </div>
+  </article>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="logo">老<span class="logo-accent">舟</span><span class="logo-thin">·不服输</span></a>
+          <p>一个50岁建筑人的AI探索笔记。分享AI心得、作品和资源。</p>
+        </div>
+        <div class="footer-col">
+          <h4>页面</h4>
+          <ul>
+            <li><a href="/">首页</a></li>
+            <li><a href="/blog.html">文章</a></li>
+            <li><a href="/tools.html">资源</a></li>
+            <li><a href="/about.html">关于</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>分类</h4>
+          <ul>
+            <li><a href="/blog.html">AI 心得</a></li>
+            <li><a href="/blog.html">AI 作品</a></li>
+            <li><a href="/blog.html">AI 资源</a></li>
+            <li><a href="/about.html">关于老舟</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 老舟</span>
+        <span>总访问 <span id="busuanzi_value_site_pv">--</span> 次 · 访客 <span id="busuanzi_value_site_uv">--</span> 人</span>
+        <span class="footer-motto">不服输</span>
+      </div>
+    </div>
+  </footer>
+
+  <button id="backToTop" class="back-to-top" aria-label="返回顶部">↑</button>
+  <script src="/js/main.js"></script>
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+</body>
+</html>

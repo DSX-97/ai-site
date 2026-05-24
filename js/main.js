@@ -1,6 +1,15 @@
 // ===== Data =====
 const blogPosts = [
   {
+    id: 10,
+    file: true,
+    title: '用 AI 卸载 360 安全卫士',
+    tag: 'AI 心得',
+    excerpt: '我说了一句话，AI 自己把 360 卸载了——从侦察、试错、突破到生成卸载工具，全程自主完成。这是我见过 AI 最有"自主性"的一次。',
+    date: '2026-05-24',
+    readTime: '12 分钟',
+  },
+  {
     id: 7,
     file: true,
     title: '零成本搭建个人博客全记录',
