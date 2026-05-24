@@ -161,40 +161,15 @@
           <strong>Uninstall360 卸载工具</strong>
           <span>ZIP 包 · 解压后双击运行 Uninstall360.exe · 需管理员权限</span>
         </div>
-        <button class="btn btn-accent" id="downloadBtn">下载卸载工具 ↓</button>
-        <span style="display:block;font-size:0.85rem;margin-top:0.5rem;opacity:0.7">如果下载没反应，请右键 → "链接另存为"</span>
+        <a class="btn btn-accent" id="downloadBtn" href="https://cdn.jsdelivr.net/gh/DSX-97/ai-site@main/downloads/Uninstall360.zip" download="Uninstall360.zip">下载卸载工具 ↓</a>
       </div>
       <script>
-      document.getElementById('downloadBtn').addEventListener('click', async function() {
-        const btn = this;
-        const url = '/downloads/Uninstall360.zip';
-        // Also try GitHub raw as fallback
-        const fallbackUrl = 'https://raw.githubusercontent.com/DSX-97/ai-site/main/downloads/Uninstall360.zip';
+      document.getElementById('downloadBtn').addEventListener('click', function(e) {
+        var btn = this;
         btn.textContent = '正在下载…';
-        btn.disabled = true;
-        try {
-          const r = await fetch(url);
-          if (!r.ok) throw new Error('Vercel serve failed');
-          const blob = await r.blob();
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = 'Uninstall360.zip';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(a.href);
-          btn.textContent = '下载成功！';
-        } catch (e) {
-          // Fallback: direct navigation to GitHub raw URL
-          const a = document.createElement('a');
-          a.href = fallbackUrl;
-          a.download = 'Uninstall360.zip';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          btn.textContent = '正在跳转…';
-          setTimeout(() => { btn.textContent = '下载卸载工具 ↓'; btn.disabled = false; }, 4000);
-        }
+        setTimeout(function() {
+          btn.textContent = '下载卸载工具 ↓';
+        }, 5000);
       });
       </script>
 
