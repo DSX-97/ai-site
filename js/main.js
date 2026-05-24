@@ -1,6 +1,15 @@
 // ===== Data =====
 const blogPosts = [
   {
+    id: 11,
+    file: true,
+    title: '深夜收到竞聘通知',
+    tag: '维权日记',
+    excerpt: '晚上十点多收到竞聘通知，自己的岗位被拿出来公开竞聘，规划设计中心仅保留两个人——这一夜我想了很多。',
+    date: '2026-04-24',
+    readTime: '5 分钟',
+  },
+  {
     id: 10,
     file: true,
     title: '用 AI 卸载 360 安全卫士',
