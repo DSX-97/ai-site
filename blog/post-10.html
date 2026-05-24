@@ -156,14 +156,47 @@
 
       <p>从我说"写个 exe"到拿到成品，不到 5 分钟。传统开发方式：开 IDE → 建项目 → 写代码 → 调试 → 编译 → 打包，至少二十分钟起步。</p>
 
-      <div class="download-box">
+      <div class="download-box" id="downloadBox">
         <div class="info">
           <strong>Uninstall360 卸载工具</strong>
           <span>ZIP 包 · 解压后双击运行 Uninstall360.exe · 需管理员权限</span>
         </div>
-        <a href="/downloads/Uninstall360.zip" class="btn btn-accent" download="Uninstall360.zip">下载卸载工具 ↓</a>
-          <span style="display:block;font-size:0.85rem;margin-top:0.5rem;opacity:0.7">如果下载没反应，请右键 → "链接另存为"</span>
+        <button class="btn btn-accent" id="downloadBtn">下载卸载工具 ↓</button>
+        <span style="display:block;font-size:0.85rem;margin-top:0.5rem;opacity:0.7">如果下载没反应，请右键 → "链接另存为"</span>
       </div>
+      <script>
+      document.getElementById('downloadBtn').addEventListener('click', async function() {
+        const btn = this;
+        const url = '/downloads/Uninstall360.zip';
+        // Also try GitHub raw as fallback
+        const fallbackUrl = 'https://raw.githubusercontent.com/DSX-97/ai-site/main/downloads/Uninstall360.zip';
+        btn.textContent = '正在下载…';
+        btn.disabled = true;
+        try {
+          const r = await fetch(url);
+          if (!r.ok) throw new Error('Vercel serve failed');
+          const blob = await r.blob();
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'Uninstall360.zip';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(a.href);
+          btn.textContent = '下载成功！';
+        } catch (e) {
+          // Fallback: direct navigation to GitHub raw URL
+          const a = document.createElement('a');
+          a.href = fallbackUrl;
+          a.download = 'Uninstall360.zip';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          btn.textContent = '正在跳转…';
+          setTimeout(() => { btn.textContent = '下载卸载工具 ↓'; btn.disabled = false; }, 4000);
+        }
+      });
+      </script>
 
       <p>这个小程序会自动完成我们刚才所有的操作：停止进程→禁用服务→运行官方卸载→删除目录→清理注册表→安排重启删除。双击运行即可，你只需要点一下 UAC 确认。</p>
 
