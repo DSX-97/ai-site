@@ -23,5 +23,6 @@
       "path": "/downloads/Uninstall360.zip",
       "compress": false
     }
-  ]
+  ],
+  "trailingSlash": false
 }
