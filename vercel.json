@@ -1,11 +1,11 @@
 {
   "headers": [
     {
-      "source": "/downloads/Uninstall360.exe",
+      "source": "/downloads/Uninstall360.zip",
       "headers": [
         {
           "key": "Content-Disposition",
-          "value": "attachment; filename=\"Uninstall360.exe\""
+          "value": "attachment; filename=\"Uninstall360.zip\""
         }
       ]
     }
