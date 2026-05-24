@@ -6,8 +6,22 @@
         {
           "key": "Content-Disposition",
           "value": "attachment; filename=\"Uninstall360.zip\""
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/zip"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
+    }
+  ],
+  "overrides": [
+    {
+      "path": "/downloads/Uninstall360.zip",
+      "compress": false
     }
   ]
 }
