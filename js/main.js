@@ -22,7 +22,7 @@ const blogPosts = [
     id: 7,
     file: true,
     title: '零成本搭建个人博客全记录',
-    tag: 'AI 资源',
+    tag: 'AI 心得',
     excerpt: '用 Claude 生成网站、GitHub 管理代码、Vercel 自动部署——一个 50 岁的建筑人搞定自己博客的完整过程。',
     date: '2026-05-21',
     readTime: '10 分钟',
