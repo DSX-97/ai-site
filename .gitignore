@@ -2,3 +2,5 @@ node_modules/
 .DS_Store
 .vscode/
 *.log
+.claude/
+temp_export.docx
