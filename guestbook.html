@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="老舟的AI探索笔记 - AI 心得、AI 作品、AI 资源">
-  <title>AI 探索笔记 - 老舟</title>
+  <meta name="description" content="留言板 - 老舟的AI探索笔记">
+  <title>留言板 - 老舟 · AI 探索笔记</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,11 +15,11 @@
     <nav class="navbar container">
       <a href="/" class="logo">老<span class="logo-accent">舟</span><span class="logo-thin">·不服输</span></a>
       <ul class="nav-links" id="navLinks">
-          <li><a href="/">首页</a></li>
-          <li><a href="/blog.html" class="active">文章</a></li>
-          <li><a href="/tools.html">资源</a></li>
-          <li><a href="/about.html">关于</a></li>
-          <li><a href="/guestbook.html">留言板</a></li>
+        <li><a href="/">首页</a></li>
+        <li><a href="/blog.html">文章</a></li>
+        <li><a href="/tools.html">资源</a></li>
+        <li><a href="/about.html">关于</a></li>
+        <li><a href="/guestbook.html" class="active">留言板</a></li>
       </ul>
       <div class="nav-actions">
         <button class="theme-toggle" aria-label="切换暗色模式">
@@ -40,22 +40,23 @@
   <section class="page-header fade-in">
     <div class="container">
       <div class="section-divider"></div>
-      <h1>AI 探索笔记</h1>
-      <p>AI 心得 · AI 作品 · AI 资源</p>
+      <h1>留言板</h1>
+      <p>有什么想说的，欢迎留言</p>
     </div>
   </section>
 
   <section class="section fade-in">
     <div class="container">
-      <div class="filter-bar" id="filterBar">
-        <button class="filter-btn active" data-filter="all">全部</button>
-        <button class="filter-btn" data-filter="AI 心得">AI 心得</button>
-        <button class="filter-btn" data-filter="AI 作品">AI 作品</button>
-        <button class="filter-btn" data-filter="AI 资源">AI 资源</button>
+      <div class="about-excerpt" style="margin-bottom:0">
+        <p>欢迎在这里写下你的想法、建议、问题，或者只是打个招呼。</p>
+        <p>每一条留言我都会认真看，需要回复的我会在评论区回复你。</p>
       </div>
-      <div class="card-grid" id="blogPosts">
-        <!-- JS 动态加载 -->
-      </div>
+    </div>
+  </section>
+
+  <section class="section fade-in">
+    <div class="container">
+      <div id="comments-section" data-post-id="guestbook"></div>
     </div>
   </section>
 
@@ -96,7 +97,7 @@
 
   <button id="backToTop" class="back-to-top" aria-label="返回顶部">↑</button>
   <script src="/js/main.js"></script>
+  <script src="/js/comments.js"></script>
   <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<script defer src="/_vercel/insights/script.js"></script>
-  </body>
+</body>
 </html>

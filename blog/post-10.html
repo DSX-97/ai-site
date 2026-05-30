@@ -15,10 +15,11 @@
     <nav class="navbar container">
       <a href="/" class="logo">老<span class="logo-accent">舟</span><span class="logo-thin">·不服输</span></a>
       <ul class="nav-links" id="navLinks">
-        <li><a href="/">首页</a></li>
-        <li><a href="/blog.html" class="active">文章</a></li>
-        <li><a href="/tools.html">资源</a></li>
-        <li><a href="/about.html">关于</a></li>
+          <li><a href="/">首页</a></li>
+          <li><a href="/blog.html" class="active">文章</a></li>
+          <li><a href="/tools.html">资源</a></li>
+          <li><a href="/about.html">关于</a></li>
+          <li><a href="/guestbook.html">留言板</a></li>
       </ul>
       <div class="nav-actions">
         <button class="theme-toggle" aria-label="切换暗色模式">
@@ -211,6 +212,12 @@
     </div>
   </article>
 
+    <section class="section fade-in">
+    <div class="container">
+      <div id="comments-section" data-post-id="post-10"></div>
+    </div>
+  </section>
+
   <footer class="site-footer">
     <div class="container">
       <div class="footer-grid">
@@ -225,6 +232,7 @@
             <li><a href="/blog.html">文章</a></li>
             <li><a href="/tools.html">资源</a></li>
             <li><a href="/about.html">关于</a></li>
+            <li><a href="/guestbook.html">留言板</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -248,5 +256,7 @@
   <button id="backToTop" class="back-to-top" aria-label="返回顶部">↑</button>
   <script src="/js/main.js"></script>
   <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-</body>
+<script defer src="/_vercel/insights/script.js"></script>
+    <script src="/js/comments.js"></script>
+  </body>
 </html>
