@@ -205,26 +205,39 @@ function createWorkCard(work) {
 }
 
 // ===== Load Posts =====
-function loadPosts(filter = 'all') {
+function loadPosts() {
   const container = document.getElementById('blogPosts');
   if (!container) return;
 
-  const filtered = filter === 'all'
-    ? blogPosts
-    : blogPosts.filter(p => p.tag === filter);
+  const posts = blogPosts.filter(p => p.tag === 'AI 心得');
 
-  if (filtered.length === 0) {
-    container.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--color-text-secondary);padding:2rem 0;">暂无该分类文章</p>';
+  if (posts.length === 0) {
+    container.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--color-text-secondary);padding:2rem 0;">暂无文章</p>';
     return;
   }
 
-  container.innerHTML = filtered.map(createPostCard).join('');
+  container.innerHTML = posts.map(createPostCard).join('');
 }
 
 function loadLatestPosts() {
   const container = document.getElementById('latestPosts');
   if (!container) return;
-  container.innerHTML = blogPosts.slice(0, 3).map(createPostCard).join('');
+  const posts = blogPosts.filter(p => p.tag === 'AI 心得');
+  container.innerHTML = posts.slice(0, 3).map(createPostCard).join('');
+}
+
+function loadResourceArticles() {
+  const container = document.getElementById('resourceArticles');
+  if (!container) return;
+
+  const posts = blogPosts.filter(p => p.tag === 'AI 资源');
+
+  if (posts.length === 0) {
+    container.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--color-text-secondary);padding:2rem 0;">暂无资源文章</p>';
+    return;
+  }
+
+  container.innerHTML = posts.map(createPostCard).join('');
 }
 
 // ===== Load Tools =====
@@ -396,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadPosts();
   loadWorks();
   loadTools();
+  loadResourceArticles();
 
-  setupFilters('filterBar', loadPosts);
   setupFilters('toolFilterBar', loadTools);
 });
