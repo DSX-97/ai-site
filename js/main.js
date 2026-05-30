@@ -4,7 +4,7 @@ const blogPosts = [
     id: 23,
     file: true,
     title: '智斧 4.0 制作教程：从界面原型到 Windows 可执行程序',
-    tag: 'AI 作品',
+    tag: 'AI 心得',
     excerpt: '用自然语言驱动 AI 开发了一个真正的 Windows 桌面软件——从界面设计、注册表读取、卸载操作、残留扫描到 EXE 打包，全程 AI 协作完成。25 MB 的 EXE，一句话的起点。',
     date: '2026-05-30',
     readTime: '15 分钟',
@@ -54,7 +54,7 @@ const blogPosts = [
   {
     id: 6,
     title: '我用 AI 搭建了一个法律文书助手',
-    tag: 'AI 作品',
+    tag: 'AI 心得',
     excerpt: '为自己的维权案件写法律文书时，我发现 AI 可以帮大忙。从提示词到工作流，手把手教你用 AI 处理法律文档。',
     date: '2026-05-08',
     readTime: '12 分钟',
