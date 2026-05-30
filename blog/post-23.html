@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="智斧 4.0 制作教程：从界面原型到 Windows 可执行程序 - 老舟">
+  <title>智斧 4.0 制作教程：从界面原型到 Windows 可执行程序 - 老舟</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container">
+      <a href="/" class="logo">老<span class="logo-accent">舟</span><span class="logo-thin">·不服输</span></a>
+      <ul class="nav-links" id="navLinks">
+          <li><a href="/">首页</a></li>
+          <li><a href="/blog.html" class="active">文章</a></li>
+          <li><a href="/tools.html">资源</a></li>
+          <li><a href="/about.html">关于</a></li>
+          <li><a href="/guestbook.html">留言板</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" aria-label="切换暗色模式">
+          <span class="icon-sun" aria-hidden="true">☀</span>
+          <span class="icon-moon" aria-hidden="true">☽</span>
+        </button>
+        <button class="mobile-toggle" id="mobileToggle" aria-label="菜单">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <article class="blog-article fade-in">
+    <div class="container">
+      <div class="card-meta">
+        <span>2026-05-30</span>
+        <span>15 分钟阅读</span>
+        <span>AI 作品</span>
+      </div>
+      <h1>智斧 4.0 制作教程：从界面原型到 Windows 可执行程序</h1>
+
+      <div class="author-note">
+        <strong>写在前面：</strong>本文记录智斧 4.0 的制作全过程——一个面向 Windows 的桌面软件管理工具，从无到有，全部由 AI 协作完成。这段经历让我确信：不懂代码的人，也能用 AI 做出真正可用的 Windows 软件。
+      </div>
+
+      <h2>什么是智斧</h2>
+      <p>智斧 4.0 是一个轻量级 Windows 桌面工具，用于查看本机已安装软件，并提供卸载、搜索、导出、打开安装目录、注册表相关入口和残留清理辅助功能。</p>
+      <p>它不是一个网页，不是一个脚本——是一个真正可双击运行的 <code>.exe</code> 程序，采用经典 Windows 工具风格界面，内置完整的软件管理功能。</p>
+
+      <div class="download-box" id="downloadBox">
+        <div class="info">
+          <strong>智斧 4.0</strong>
+          <span>Windows 桌面软件管理工具 · 直接双击运行 · 约 25 MB</span>
+        </div>
+        <a class="btn btn-accent" id="downloadBtn" href="/downloads/智斧.exe" download="智斧.exe">下载智斧 4.0 ↓</a>
+      </div>
+      <script>
+      document.getElementById('downloadBtn').addEventListener('click', function(e) {
+        var btn = this;
+        btn.textContent = '正在下载…';
+        setTimeout(function() {
+          btn.textContent = '下载智斧 4.0 ↓';
+        }, 5000);
+      });
+      </script>
+
+      <hr>
+
+      <h2>一句话引发的开发</h2>
+      <p>和之前卸载 360 的经历很像，这次开发智斧也不是因为我想写代码——而是我发现市面上缺少一个干净、轻量的软件管理工具。那些所谓的「卸载工具」自己就是流氓软件。</p>
+      <p>我打开 Claude，说了一句话：</p>
+      <blockquote>"帮我做一个能查看已安装软件、能卸载、能清理残留的 Windows 工具。"</blockquote>
+      <p>接下来的所有事情——界面设计、后端开发、功能实现、图标制作、EXE 打包——全部由 AI 协作完成。我主要负责表达需求和检查结果。</p>
+
+      <h2>开发方式：自然语言驱动</h2>
+      <p>整个项目的开发流程非常特别：</p>
+      <ul>
+        <li>我用中文描述想要的软件方向和功能</li>
+        <li>AI 理解需求，编写和修改代码</li>
+        <li>我通过截图反馈界面问题</li>
+        <li>AI 调整布局、颜色、菜单</li>
+        <li>AI 自己打包成 EXE、启动验证</li>
+        <li>我继续反馈，AI 继续迭代</li>
+      </ul>
+      <p>这种模式大幅降低了桌面软件开发门槛。我不需要操作复杂的工程细节，不需要手动处理打包、图标、依赖和验证流程，只需要持续表达目标、选择方案和检查结果。</p>
+
+      <h2>技术选型</h2>
+      <p>智斧采用前后端结合的轻量桌面方案：</p>
+      <ul>
+        <li><strong>前端：</strong>HTML + CSS + JavaScript</li>
+        <li><strong>桌面壳：</strong>pywebview</li>
+        <li><strong>后端：</strong>Python</li>
+        <li><strong>数据来源：</strong>Windows 注册表、AppX 包信息、文件系统</li>
+        <li><strong>打包工具：</strong>PyInstaller</li>
+        <li><strong>图标处理：</strong>Pillow</li>
+      </ul>
+      <p>这个方案的优势是开发速度快，界面易调整，Python 后端可以直接调用 Windows 本地能力，最终用 PyInstaller 打包成单文件 EXE。</p>
+
+      <h2>核心功能</h2>
+
+      <h3>1. 读取软件列表</h3>
+      <p>从 Windows 注册表三个位置读取已安装软件信息：</p>
+      <ul>
+        <li><code>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall</code></li>
+        <li><code>HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall</code></li>
+        <li><code>HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall</code></li>
+      </ul>
+      <p>读取字段包括名称、版本、发布者、安装日期、大小、位置、卸载命令等。读取完成后过滤系统组件、补丁更新和重复条目，按名称排序。</p>
+
+      <h3>2. 读取 Microsoft Store Apps</h3>
+      <p>通过 PowerShell 的 <code>Get-AppxPackage</code> 读取 Microsoft Store 安装的应用，用户可以在菜单中切换查看「桌面软件」和「Store 应用」。</p>
+
+      <h3>3. 软件操作能力</h3>
+      <ul>
+        <li>卸载：执行软件的卸载命令</li>
+        <li>打开安装目录</li>
+        <li>复制卸载命令到剪贴板</li>
+        <li>导出 HTML：把软件列表导出为文件</li>
+        <li>搜索软件名称</li>
+        <li>注册表条目定位</li>
+        <li>删除注册表条目</li>
+      </ul>
+
+      <h3>4. 卸载后残留扫描</h3>
+      <p>执行卸载后，自动扫描以下残留项：</p>
+      <ul>
+        <li>软件安装目录</li>
+        <li>桌面快捷方式</li>
+        <li>开始菜单快捷方式</li>
+        <li>卸载注册表项</li>
+        <li>软件相关注册表路径</li>
+      </ul>
+      <p>扫描结果展示给用户确认后，再执行清理。同时做了严格的安全边界判断，不允许删除系统根目录、Windows 目录等高风险路径。</p>
+
+      <h2>界面设计</h2>
+      <p>界面采用深色背景、浅色文字、斑马纹列表行和高亮选中行的经典工具风格：</p>
+      <ul>
+        <li>顶部菜单栏：文件、操作、查看、帮助</li>
+        <li>软件表格：程序名称、大小、安装时间</li>
+        <li>右键菜单：卸载、强制删除、注册表条目、安装文件夹、搜索等</li>
+        <li>底部搜索框：快速筛选软件</li>
+        <li>底部状态栏：软件数量和占用空间</li>
+      </ul>
+
+      <h2>图标设计</h2>
+      <p>智斧的图标定位是：</p>
+      <ul>
+        <li><strong>斧头</strong>——表示清理、整理、处理问题</li>
+        <li><strong>蓝色</strong>——表示工具、系统、稳定和科技感</li>
+        <li><strong>深色底</strong>——与软件界面风格统一</li>
+      </ul>
+      <p>AI 生成了多个方案，我选择方案一，AI 嵌入 EXE 并处理了 Windows 图标缓存问题。</p>
+
+      <h2>打包与体积优化</h2>
+      <p>AI 使用 PyInstaller 打包，主要参数：</p>
+      <ul>
+        <li><code>--onefile</code>：打包成单个 EXE</li>
+        <li><code>--windowed</code>：不显示控制台窗口</li>
+        <li><code>--icon</code>：指定 EXE 图标</li>
+        <li><code>--exclude-module</code>：排除不需要的大型依赖</li>
+      </ul>
+      <p>初始打包体积较大，经过排除无用依赖后，最终控制在约 25 MB。</p>
+
+      <h2>安全边界</h2>
+      <p>开发这类系统工具时，AI 始终注意安全：</p>
+      <ul>
+        <li>不会自动删除用户文件</li>
+        <li>不会静默删除注册表</li>
+        <li>清理残留前必须弹出确认</li>
+        <li>不允许删除系统关键目录</li>
+        <li>替换 EXE 前只结束目标程序进程</li>
+      </ul>
+
+      <hr>
+
+      <h2>总结：自然语言开发的启示</h2>
+      <p>智斧 4.0 的制作过程可以概括为：</p>
+      <blockquote>界面设计 → Windows 数据读取 → 卸载操作 → 残留扫描 → 菜单交互 → 图标设计 → EXE 打包 → 体积优化 → 启动验证</blockquote>
+      <p>这个项目让我看到了一种新的软件生产方式：</p>
+      <blockquote>自然语言需求 → AI 分析工程 → AI 编写代码 → AI 打包验证 → 用户反馈 → AI 继续迭代</blockquote>
+      <p>用户主要负责表达目标和判断结果，AI 负责把目标转化为工程实现。这种模式适合个人学习、产品验证和小型工具开发。</p>
+      <p>我相信，未来会有越来越多这样的软件——不是由专业程序员一行行写出来的，而是由一个普通人和 AI 聊出来的。</p>
+
+      <div class="download-box" style="margin-top:2rem;">
+        <div class="info">
+          <strong>智斧 4.0</strong>
+          <span>Windows 桌面软件管理工具 · 直接双击运行 · 约 25 MB</span>
+        </div>
+        <a class="btn btn-accent" href="/downloads/智斧.exe" download="智斧.exe">下载智斧 4.0 ↓</a>
+      </div>
+
+      <div class="author-note" style="margin-top:2rem;">
+        <strong>老舟：</strong>50 岁的建筑人，正在用 AI 给自己多一条路。<strong>不服输。</strong>
+      </div>
+    </div>
+  </article>
+
+    <section class="section fade-in">
+    <div class="container">
+      <div id="comments-section" data-post-id="post-23"></div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="logo">老<span class="logo-accent">舟</span><span class="logo-thin">·不服输</span></a>
+          <p>一个50岁建筑人的AI探索笔记。分享AI心得、作品和资源。</p>
+        </div>
+        <div class="footer-col">
+          <h4>页面</h4>
+          <ul>
+            <li><a href="/">首页</a></li>
+            <li><a href="/blog.html">文章</a></li>
+            <li><a href="/tools.html">资源</a></li>
+            <li><a href="/about.html">关于</a></li>
+            <li><a href="/guestbook.html">留言板</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>分类</h4>
+          <ul>
+            <li><a href="/blog.html">AI 心得</a></li>
+            <li><a href="/blog.html">AI 作品</a></li>
+            <li><a href="/blog.html">AI 资源</a></li>
+            <li><a href="/about.html">关于老舟</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 老舟</span>
+        <span>总访问 <span id="busuanzi_value_site_pv">--</span> 次 · 访客 <span id="busuanzi_value_site_uv">--</span> 人</span>
+        <span class="footer-motto">不服输</span>
+      </div>
+    </div>
+  </footer>
+
+  <button id="backToTop" class="back-to-top" aria-label="返回顶部">↑</button>
+  <script src="/js/main.js"></script>
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script defer src="/_vercel/insights/script.js"></script>
+    <script src="/js/comments.js"></script>
+  </body>
+</html>

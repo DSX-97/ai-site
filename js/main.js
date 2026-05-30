@@ -1,6 +1,15 @@
 // ===== Data =====
 const blogPosts = [
   {
+    id: 23,
+    file: true,
+    title: '智斧 4.0 制作教程：从界面原型到 Windows 可执行程序',
+    tag: 'AI 作品',
+    excerpt: '用自然语言驱动 AI 开发了一个真正的 Windows 桌面软件——从界面设计、注册表读取、卸载操作、残留扫描到 EXE 打包，全程 AI 协作完成。25 MB 的 EXE，一句话的起点。',
+    date: '2026-05-30',
+    readTime: '15 分钟',
+  },
+  {
     id: 10,
     file: true,
     title: '用 AI 卸载 360 安全卫士',
@@ -49,6 +58,21 @@ const blogPosts = [
     excerpt: '为自己的维权案件写法律文书时，我发现 AI 可以帮大忙。从提示词到工作流，手把手教你用 AI 处理法律文档。',
     date: '2026-05-08',
     readTime: '12 分钟',
+  },
+];
+
+const myWorks = [
+  {
+    name: '智斧 4.0',
+    category: 'AI 作品',
+    desc: 'Windows 桌面软件管理工具，查看已安装软件、卸载、残留扫描清理。自然语言驱动 AI 开发，真正可运行的 EXE 程序。',
+    url: '/downloads/智斧.exe',
+  },
+  {
+    name: 'Uninstall360 卸载工具',
+    category: 'AI 作品',
+    desc: '360 安全卫士彻底卸载工具。AI 自动生成的 C# 程序，实现进程终止、服务禁用、注册表清理、重启删除全流程。',
+    url: 'https://cdn.jsdelivr.net/gh/DSX-97/ai-site@main/downloads/Uninstall360.zip',
   },
 ];
 
@@ -169,6 +193,17 @@ function createToolCard(tool) {
   `;
 }
 
+function createWorkCard(work) {
+  return `
+    <div class="card tool-card" data-category="${work.category}">
+      <div class="tool-icon">🔨</div>
+      <h3>${work.name}</h3>
+      <p>${work.desc}</p>
+      <a href="${work.url}" class="btn btn-accent" download>下载 ↓</a>
+    </div>
+  `;
+}
+
 // ===== Load Posts =====
 function loadPosts(filter = 'all') {
   const container = document.getElementById('blogPosts');
@@ -193,6 +228,12 @@ function loadLatestPosts() {
 }
 
 // ===== Load Tools =====
+function loadWorks() {
+  const container = document.getElementById('worksGrid');
+  if (!container) return;
+  container.innerHTML = myWorks.map(createWorkCard).join('');
+}
+
 function loadTools(filter = 'all') {
   const container = document.getElementById('toolGrid');
   if (!container) return;
@@ -353,6 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Page-specific init
   loadLatestPosts();
   loadPosts();
+  loadWorks();
   loadTools();
 
   setupFilters('filterBar', loadPosts);
