@@ -1,0 +1,3333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>波斯铁卫 — 塔防</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#080b12;font-family:'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif}
+#app{width:100%;height:100%;display:flex;flex-direction:column;position:relative}
+#top-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:linear-gradient(180deg,#1c2430,#10151d);color:#eadfcb;font-size:14px;border-bottom:1px solid #394457;box-shadow:0 8px 20px rgba(0,0,0,.28);flex-shrink:0;min-height:46px;z-index:10}
+.tb-item{display:flex;align-items:center;gap:6px;padding:3px 8px;border:1px solid rgba(255,255,255,.06);border-radius:6px;background:rgba(255,255,255,.035)}
+.tb-item .label{color:#a59680;font-size:11px}
+.tb-item .value{font-weight:bold;font-size:15px}
+#hp-val{color:#e85555}
+#gold-val{color:#f5c542}
+#wave-val{color:#64b5f6}
+#sp-val{color:#81c784}
+#canvas-wrap{flex:1;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 38%,#24303a 0,#10151d 48%,#070a0f 100%)}
+#canvas-wrap::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;background:
+  radial-gradient(circle at 50% 45%,rgba(255,235,190,0.04),rgba(0,0,0,0) 38%),
+  linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px),
+  linear-gradient(0deg,rgba(0,0,0,0.16),rgba(0,0,0,0) 18%,rgba(0,0,0,0) 72%,rgba(0,0,0,0.22));
+background-size:auto,96px 96px,auto;mix-blend-mode:screen}
+canvas{display:block;width:100%;height:100%;image-rendering:auto;cursor:crosshair}
+#bottom-bar{display:flex;align-items:center;padding:8px 10px;background:linear-gradient(0deg,#171d26,#0f141c);border-top:1px solid #394457;box-shadow:0 -8px 20px rgba(0,0,0,.25);flex-shrink:0;min-height:62px;gap:6px;z-index:10;overflow-x:auto;overflow-y:hidden}
+.tower-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:74px;height:50px;border:1px solid #435061;border-radius:7px;background:linear-gradient(145deg,#273240,#161c25);color:#e3d6be;font-size:10px;cursor:pointer;flex-shrink:0;transition:transform .12s,border-color .15s,box-shadow .15s,background .15s;padding:3px 8px;gap:1px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.tower-btn:hover{border-color:#8ca3b8;background:linear-gradient(145deg,#314052,#19202a);box-shadow:0 0 14px rgba(100,181,246,.18),inset 0 1px 0 rgba(255,255,255,.08)}
+.tower-btn:active{transform:scale(.95)}
+.tower-btn.selected{border-color:#f5c542;background:linear-gradient(145deg,#3d3220,#221f18);box-shadow:0 0 16px rgba(245,197,66,.35),inset 0 0 0 1px rgba(245,197,66,.18)}
+.tower-btn .cost{color:#f5c542;font-size:11px;font-weight:bold}
+.tower-btn .tname{font-size:10px}
+.tower-btn .keyhint{color:#817869;font-size:9px}
+#wave-btn{min-width:86px;height:50px;border:1px solid #3f9a5b;border-radius:7px;background:linear-gradient(145deg,#236139,#173a27);color:#a8e6b2;font-size:12px;font-weight:bold;cursor:pointer;flex-shrink:0;transition:all .15s;margin-left:auto;box-shadow:0 0 14px rgba(58,138,78,.16)}
+#wave-btn:hover{border-color:#66c384;background:linear-gradient(145deg,#2c7044,#1c4630)}
+#wave-btn:disabled{opacity:.4;cursor:not-allowed}
+#militia-btn{min-width:58px;height:50px;border:1px solid #876044;border-radius:7px;background:linear-gradient(145deg,#49311f,#2a1d16);color:#f0c39b;font-size:10px;cursor:pointer;flex-shrink:0;text-align:center;padding:3px 6px}
+#militia-btn:disabled{opacity:.4;cursor:not-allowed}
+#militia-btn .sp{color:#81c784;font-size:11px}
+#skill-btn{min-width:54px;height:50px;border:1px solid #4f6d8a;border-radius:7px;background:linear-gradient(145deg,#22364c,#172434);color:#8fd4ff;font-size:9px;cursor:pointer;flex-shrink:0;text-align:center;padding:3px 5px}
+#skill-btn:disabled{opacity:.4;cursor:not-allowed}
+#skill-btn .cd{color:#e85555;font-size:8px}
+#toast{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:18px;font-weight:bold;text-shadow:0 2px 10px rgba(0,0,0,.9);padding:8px 14px;border-radius:7px;background:rgba(12,16,22,.72);border:1px solid rgba(255,255,255,.12);pointer-events:none;opacity:0;transition:opacity .3s;z-index:20}
+#toast.show{opacity:1}
+#overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:30}
+#overlay.show{display:flex}
+#overlay h2{font-size:28px;margin-bottom:10px}
+#overlay p{font-size:16px;color:#c0b8a0;margin-bottom:20px}
+#overlay button{padding:12px 36px;font-size:16px;border:1px solid #5a5a8e;border-radius:8px;background:#1a1a3e;color:#fff;cursor:pointer}
+#overlay button:hover{background:#2a2a5e}
+#tower-panel{position:absolute;padding:10px 12px;background:rgba(13,17,24,.95);border:1px solid #566171;border-radius:8px;color:#e8e0d0;font-size:12px;display:none;z-index:15;pointer-events:auto;min-width:172px;box-shadow:0 12px 28px rgba(0,0,0,.45)}
+#tower-panel .tp-name{font-size:14px;font-weight:bold;color:#f5c542}
+#tower-panel .tp-lv{color:#aaa;font-size:11px}
+#tower-panel .tp-btn{display:inline-block;margin:4px 4px 0 0;padding:5px 12px;border:1px solid #4a4a7e;border-radius:4px;background:#1e1e42;color:#fff;font-size:11px;cursor:pointer}
+#tower-panel .tp-btn:hover{background:#2e2e5e}
+#tower-panel .tp-btn.upgrade{color:#f5c542;border-color:#5a4a1e}
+#tower-panel .tp-btn.sell{color:#e88080;border-color:#5a2a2a}
+.tp-stat-row{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#b0a898}
+.tp-stat-label{color:#8a7e6e}
+.tp-stat-val{color:#e8dcc8;min-width:30px;text-align:right}
+.tp-stat-next{color:#f5c542;min-width:30px;text-align:right}
+.tp-stat-arrow{color:#5a4a2e;margin:0 3px}.missile-bar-wrap{display:inline-flex;align-items:center;gap:4px;margin-left:4px}
+.missile-bar-track{width:44px;height:6px;background:#1e1e3e;border:1px solid #3a3a6e;border-radius:3px;overflow:hidden;position:relative}
+.missile-bar-fill{height:100%;border-radius:2px;transition:width .15s;background:linear-gradient(90deg,#ff8844,#ffcc44)}
+.missile-bar-fill.ready{background:linear-gradient(90deg,#ff6644,#ff4444);box-shadow:0 0 6px #ff4444}
+.missile-num{color:#ff6644;font-weight:bold;font-size:13px;min-width:12px;text-align:center}
+.missile-num.empty{color:#665}
+::-webkit-scrollbar{height:2px}
+::-webkit-scrollbar-track{background:#0d0d1a}
+::-webkit-scrollbar-thumb{background:#3a3a5e}
+/* ── Settings ── */
+#settings-btn{min-width:40px;height:50px;border:1px solid #435061;border-radius:7px;background:linear-gradient(145deg,#273240,#161c25);color:#d0c8b0;font-size:16px;cursor:pointer;flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
+#settings-btn:hover{border-color:#8ca3b8;background:linear-gradient(145deg,#314052,#19202a)}
+#settings-panel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(13,17,24,.97);border:1px solid #566171;border-radius:10px;padding:24px 32px;z-index:40;display:none;flex-direction:column;align-items:stretch;min-width:260px;box-shadow:0 20px 50px rgba(0,0,0,.62)}
+#settings-panel.show{display:flex}
+#settings-panel h3{color:#e0d8c8;font-size:18px;text-align:center;margin-bottom:16px;border-bottom:1px solid #3a3a6e;padding-bottom:10px}
+.st-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #222248}
+.st-row:last-child{border-bottom:none}
+.st-label{color:#b0a898;font-size:14px}
+.st-btn{padding:6px 18px;border:1px solid #4a4a7e;border-radius:6px;background:#1e1e42;color:#e0d8c8;font-size:13px;cursor:pointer;transition:all .12s}
+.st-btn:hover{background:#2a2a5e;border-color:#6a6aae}
+.st-btn.danger:hover{border-color:#e85555;color:#e85555}
+.st-btn.success:hover{border-color:#81c784;color:#81c784}
+.st-toggle{position:relative;width:48px;height:24px;background:#2a2a3e;border-radius:12px;cursor:pointer;transition:all .2s;flex-shrink:0}
+.st-toggle.on{background:#2a6a3e}
+.st-toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#888;border-radius:50%;transition:all .2s}
+.st-toggle.on::after{left:26px;background:#81c784}
+.st-vol-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.st-vol-wrap input[type=range]{width:90px;height:4px;-webkit-appearance:none;appearance:none;background:#2a2a3e;border-radius:2px;outline:none}
+.st-vol-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:#c0b8a0;border-radius:50%;cursor:pointer}
+.st-vol-wrap input[type=range]::-moz-range-thumb{width:14px;height:14px;background:#c0b8a0;border-radius:50%;border:none;cursor:pointer}
+.st-vol-num{color:#c0b8a0;font-size:12px;min-width:28px;text-align:right}
+#st-close{position:absolute;top:8px;right:12px;background:none;border:none;color:#666;font-size:20px;cursor:pointer;padding:4px}
+#st-close:hover{color:#e0d8c8}
+@media(max-width:480px){
+  .tower-btn{min-width:50px;height:42px;font-size:9px}
+  #top-bar{font-size:12px;padding:4px 8px;min-height:36px}
+  .tb-item .value{font-size:13px}
+  #bottom-bar{min-height:48px;padding:4px}
+  #wave-btn{min-width:60px;height:42px;font-size:11px}
+  #settings-btn{min-width:30px;height:42px;font-size:14px}
+  #settings-panel{min-width:220px;padding:18px 20px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top-bar">
+    <div class="tb-item"><span class="label">❤️ 核心</span><span class="value" id="hp-val">15/15</span></div>
+    <div class="tb-item"><span class="label">💰 资金</span><span class="value" id="gold-val">$500</span></div>
+    <div class="tb-item"><span class="label">🌊 波次</span><span class="value" id="wave-val">0/50</span></div>
+    <div class="tb-item"><span class="label">⚡ 支援</span><span class="value" id="sp-val">0</span></div>
+    <div class="tb-item missile-bar-wrap">
+      <span class="label">🚀</span>
+      <div class="missile-bar-track"><div class="missile-bar-fill" id="missile-fill" style="width:0%"></div></div>
+      <span class="missile-num empty" id="missile-num">0</span>
+    </div>
+  </div>
+  <div id="canvas-wrap">
+    <canvas id="gc"></canvas>
+    <div id="tower-panel"></div>
+    <div id="toast"></div>
+    <div id="overlay">
+      <h2 id="ol-title"></h2>
+      <p id="ol-desc"></p>
+      <button id="ol-btn">重新开始</button>
+    </div>
+    <div id="settings-panel">
+      <button id="st-close">✕</button>
+      <h3>⚙️ 设置</h3>
+      <div class="st-row"><span class="st-label">🔄 重玩</span><button class="st-btn danger" id="st-restart">重新开始</button></div>
+      <div class="st-row"><span class="st-label">💾 存盘</span><button class="st-btn" id="st-save">保存游戏</button></div>
+      <div class="st-row"><span class="st-label">📂 读取</span><button class="st-btn" id="st-load">读取存档</button></div>
+      <div class="st-row"><span class="st-label">🔊 音效</span><div class="st-toggle on" id="st-sfx"></div></div>
+      <div class="st-row"><span class="st-label">🎵 音量</span><div class="st-vol-wrap"><input type="range" id="st-volume" min="0" max="100" value="80"><span class="st-vol-num" id="st-vol-num">80%</span></div></div>
+    </div>
+  </div>
+  <div id="bottom-bar">
+    <div class="tower-btn" data-tower="0"><span class="tname">高射机枪</span><span class="cost">$100</span><span class="keyhint">[1]</span></div>
+    <div class="tower-btn" data-tower="1"><span class="tname">防空导弹</span><span class="cost">$200</span><span class="keyhint">[2]</span></div>
+    <div class="tower-btn" data-tower="2"><span class="tname">电子干扰</span><span class="cost">$150</span><span class="keyhint">[3]</span></div>
+    <button id="militia-btn">民兵<br><span class="sp">⚡50</span></button>
+    <button id="skill-btn">侦察<br>无人机</button>
+    <button id="wave-btn" disabled>▶ 开始</button>
+    <button id="settings-btn">⚙️</button>
+  </div>
+</div>
+<script>
+// ============================================================
+//  《波斯铁卫》— HTML5 塔防游戏
+//  虚构背景：美以联军进攻伊朗，玩家扮演革命卫队指挥官
+// ============================================================
+
+// ---- Constants ----
+const W = 1200, H = 720;
+const TOWER_TYPES = [
+  { id:'aa', name:'高射机枪', cost:100, desc:'高射速、低伤害，对低空目标有效',
+    dmg:[10,14,20,28], dmgAir:[10,10,15,22], range:[100,110,122,136], cd:[25,23,20,18], color:'#c2b280', hitAir:true, hitGround:true, groundOnly:false,
+    shape:'rect', upgrades:[125,300,550], sellRatio:.5 },
+  { id:'sam', name:'防空导弹', cost:200, desc:'高伤害、慢射速，导弹拦截优先',
+    dmg:[60,90,132,192], range:[130,140,152,164], cd:[58,52,46,41], color:'#2a5c8e', hitAir:true, hitGround:false, groundOnly:false,
+    shape:'diamond', upgrades:[200,450,850], sellRatio:.5 },
+  { id:'jammer', name:'电子干扰', cost:150, desc:'减速周围敌人，揭示隐形单位',
+    dmg:[0,0,0,0], range:[105,113,127,144], cd:[70,64,58,52], color:'#4b5320', hitAir:true, hitGround:true, groundOnly:false,
+    shape:'hex', upgrades:[150,375,700], sellRatio:.5, slow:[.36,.47,.57,.70] },
+];
+const ENEMY_TYPES = [
+  { id:'drone', name:'无人机群', hp:20, speed:2.54, reward:5, size:8, color:'#a0a0c0', armor:0, flying:true, stealth:false },
+  { id:'ifv', name:'步兵战车', hp:80, speed:1.59, reward:8, size:10, color:'#6b8e6b', armor:.15, flying:false, stealth:false },
+  { id:'missile', name:'巡航导弹', hp:30, speed:3.49, reward:6, size:7, color:'#e8a040', armor:0, flying:true, stealth:false },
+  { id:'suicide', name:'自爆无人机', hp:15, speed:4.44, reward:4, size:7, color:'#d05050', armor:0, flying:true, stealth:false, suicide:true },
+  { id:'f16', name:'F-16', hp:200, speed:1.43, reward:15, size:12, color:'#8090b0', armor:.25, flying:true, stealth:false },
+  { id:'tomahawk', name:'战斧导弹', hp:50, speed:3.18, reward:7, size:7, color:'#d0a060', armor:0, flying:true, stealth:false },
+  { id:'stealth', name:'隐身战机', hp:350, speed:1.90, reward:30, size:13, color:'#4a4a6a', armor:.3, flying:true, stealth:true },
+];
+
+// ---- Game State ----
+const G = {
+  gold: 500, coreHP: 15, maxCoreHP: 15, wave: 0, sp: 0,
+  phase: 'idle', // idle | playing | won | lost
+  towers: [], enemies: [], projs: [], particles: [], texts: [],
+  slots: [], selectedTower: null, pendingType: -1,
+  spawnQueue: [], spawnIndex: 0, spawnTimer: 0, waveInProgress: false, allSpawned: false,
+  reconCD: 0, reconMaxCD: 600, reconDrones: [],
+  bombardMissiles: [], // 基地来袭导弹
+  frame: 0, goldEarned: 0, kills: 0,
+  // 德黑兰反击飞弹系统
+  missileCharge: 0,    // 当前充能值
+  missileCost: 20,     // 每20点充能转1发飞弹（从5→20，速度除4）
+  missileReady: 0,     // 已充好的飞弹数
+  tehranMissiles: [],  // 已发射的飞弹
+  bases: {},           // {dir: hp} 每个基地2血
+  cursorX: -999, cursorY: -999, // 鼠标位置（用于AoE预览圈）
+  // 双击检测
+  _lastClickTower: null, _lastClickTime: 0,
+  _lastRightClickTower: null, _lastRightClickTime: 0,
+  _confirmExit: false,
+};
+let ctx, canvas, tpPanel, toastEl, overlayEl, olTitle, olDesc, olBtn;
+
+// ---- Map / Routes ----
+// 德黑兰在陆地正中 — 两矩形嵌套，入口长直线，间距100px
+const CORE_X = 600, CORE_Y = 360;
+const ROUTES = [
+  // 西路 — 外矩形，从左到右沿顶边直线入场
+  { id:'West', color:'#4488cc', waypoints:[
+    {x:0,y:80},{x:900,y:80},{x:900,y:640},
+    {x:250,y:640},{x:250,y:360},{x:600,y:360}
+  ]},
+  // 南路 — 内矩形，从右到左沿底边直线入场
+  { id:'South', color:'#44cc66', waypoints:[
+    {x:1200,y:540},{x:350,y:540},{x:350,y:180},
+    {x:800,y:180},{x:800,y:360},{x:600,y:360}
+  ]},
+];
+
+// 美军军事基地位置（地图边缘东南西北）
+const BASE_POSITIONS = [
+  {x:0,   y:360, dir:'西'},   // West
+  {x:1200,y:360, dir:'东'},   // East
+  {x:600, y:0,   dir:'北'},   // North
+  {x:600, y:720, dir:'南'},   // South
+];
+
+// Tower slots — 沿路中间段等距布点，转角对角线各1个
+function initSlots() {
+  G.slots = [];
+  const S = [];
+  const seen = new Set();
+
+  function add(x, y) {
+    const rx = Math.round(x), ry = Math.round(y);
+    const k = `${rx},${ry}`;
+    if (seen.has(k)) return;
+    // 避免24×24方块叠在一起
+    for (const es of S) {
+      if (Math.abs(es.x - rx) < 24 && Math.abs(es.y - ry) < 24
+          && Math.hypot(es.x - rx, es.y - ry) < 24) {
+        return;
+      }
+    }
+    // 避免方块压到任意兵线的24px宽线
+    for (const route of ROUTES) {
+      const pts = route.waypoints;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const ax = pts[i].x, ay = pts[i].y;
+        const bx = pts[i+1].x, by = pts[i+1].y;
+        const dx = bx - ax, dy = by - ay;
+        const lenSq = dx * dx + dy * dy;
+        if (lenSq === 0) continue;
+        let t = ((rx - ax) * dx + (ry - ay) * dy) / lenSq;
+        t = t < 0 ? 0 : t > 1 ? 1 : t;
+        const d = Math.hypot(rx - (ax + dx * t), ry - (ay + dy * t));
+        if (d < 24) return; // 兵线半宽12 + 方块半宽12
+      }
+    }
+    seen.add(k);
+    S.push({x: rx, y: ry});
+  }
+
+  for (const route of ROUTES) {
+    const pts = route.waypoints;
+
+    // ── 路段中间（s=1..steps-1，避开两端） ──
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i], b = pts[i+1];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const len = Math.hypot(dx, dy);
+      if (len < 1) continue;
+      const nx = -dy / len, ny = dx / len;
+      const steps = Math.max(1, Math.round(len / 80));
+      for (let s = 1; s < steps; s++) {
+        const t = s / steps;
+        const px = a.x + dx * t, py = a.y + dy * t;
+        add(px + nx * 26, py + ny * 26);
+        add(px - nx * 26, py - ny * 26);
+      }
+    }
+
+    // ── 转角：只有对角线上2个（内角 + 外角） ──
+    for (let i = 1; i < pts.length - 1; i++) {
+      const prev = pts[i-1], curr = pts[i], next = pts[i+1];
+      const dx_in = curr.x - prev.x, dy_in = curr.y - prev.y;
+      const dx_out = next.x - curr.x, dy_out = next.y - curr.y;
+      const len_in = Math.hypot(dx_in, dy_in);
+      const len_out = Math.hypot(dx_out, dy_out);
+      if (len_in < 1 || len_out < 1) continue;
+      const px_in = -dy_in / len_in, py_in = dx_in / len_in;
+      const px_out = -dy_out / len_out, py_out = dx_out / len_out;
+      // 内角 = P + perp_in*22 + perp_out*22
+      add(curr.x + px_in*22 + px_out*22, curr.y + py_in*22 + py_out*22);
+      // 外角 = P - perp_in*22 - perp_out*22
+      add(curr.x - px_in*22 - px_out*22, curr.y - py_in*22 - py_out*22);
+    }
+
+    // ── 入口起点（第一航点） ──
+    const a = pts[0], b = pts[1];
+    const dx0 = b.x - a.x, dy0 = b.y - a.y;
+    const len0 = Math.hypot(dx0, dy0);
+    if (len0 > 1) {
+      const nx = -dy0 / len0, ny = dx0 / len0;
+      add(a.x + nx * 26, a.y + ny * 26);
+      add(a.x - nx * 26, a.y - ny * 26);
+    }
+  }
+
+  // 德黑兰附近
+  add(CORE_X - 10, CORE_Y - 26);
+  add(CORE_X - 10, CORE_Y + 26);
+
+  // 只保留伊朗和也门范围内的炮塔点位
+  const filtered = S.filter(p => isSlotAllowed(p.x, p.y));
+  for (const p of filtered) G.slots.push({x: p.x, y: p.y, occupied: false});
+}
+
+// 允许建造的国家多边形（伊朗 + 也门）
+const ALLOWED_POLYS = [
+  // 伊朗
+  [{x:10,y:10},{x:1190,y:10},{x:1190,y:85},{x:1160,y:150},{x:1120,y:210},{x:1080,y:260},{x:1040,y:300},{x:1030,y:350},{x:1050,y:375},{x:1100,y:388},{x:1190,y:395},{x:1190,y:395},{x:1100,y:398},{x:1000,y:412},{x:900,y:418},{x:800,y:415},{x:700,y:408},{x:600,y:402},{x:500,y:400},{x:400,y:408},{x:300,y:420},{x:200,y:435},{x:100,y:430},{x:55,y:440},{x:40,y:425},{x:50,y:400},{x:80,y:370},{x:120,y:340},{x:150,y:290},{x:165,y:220},{x:180,y:150},{x:190,y:80},{x:10,y:10}],
+  // 也门
+  [{x:185,y:565},{x:205,y:566},{x:235,y:566},{x:275,y:566},{x:335,y:565},{x:375,y:564},{x:425,y:563},{x:475,y:563},{x:525,y:563},{x:575,y:563},{x:625,y:563},{x:675,y:563},{x:725,y:563},{x:775,y:563},{x:825,y:564},{x:925,y:565},{x:925,y:635},{x:915,y:660},{x:875,y:690},{x:815,y:715},{x:745,y:730},{x:665,y:733},{x:595,y:725},{x:525,y:713},{x:465,y:700},{x:405,y:683},{x:355,y:660},{x:315,y:635},{x:230,y:565},{x:185,y:565}],
+];
+function pointInPoly(x,y,poly){
+  let inside=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i].x,yi=poly[i].y;
+    const xj=poly[j].x,yj=poly[j].y;
+    if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi) inside=!inside;
+  }
+  return inside;
+}
+function isSlotAllowed(x,y){
+  for(const poly of ALLOWED_POLYS){
+    if(pointInPoly(x,y,poly)) return true;
+  }
+  return false;
+}
+
+// ---- Utility ----
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function distSq(a,b){const dx=a.x-b.x,dy=a.y-b.y;return dx*dx+dy*dy}
+function lerp(a,b,t){return a+(b-a)*t}
+function rand(a,b){return a+Math.random()*(b-a)}
+function randInt(a,b){return Math.floor(rand(a,b+1))}
+function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
+function hsvToRgb(h,s,v){let i=Math.floor(h*6),f=h*6-i,p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);switch(i%6){case 0:return[v,t,p];case 1:return[q,v,p];case 2:return[p,v,t];case 3:return[p,q,v];case 4:return[t,p,v];case 5:return[v,p,q]}return[0,0,0]}
+function colorAlpha(c,a){
+  if(c&&c[0]==='#'){
+    const h=c.slice(1,7);
+    const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+  return c;
+}
+function compactAlive(arr, keep){
+  let write=0;
+  for(let read=0;read<arr.length;read++){
+    const item=arr[read];
+    if(keep(item)) arr[write++]=item;
+  }
+  arr.length=write;
+}
+function perfLoad(){
+  return G.enemies.length + G.projs.length + G.particles.length * 0.25;
+}
+function emitParticle(x,y,vx,vy,life,color,size,extra){
+  if(G.particles.length>=220 && !extra?.shockwave) return;
+  const p={x,y,vx:vx||0,vy:vy||0,life,color,size:size||2};
+  if(extra) Object.assign(p,extra);
+  G.particles.push(p);
+}
+function emitBurst(x,y,count,color,sizeMin,sizeMax,life,spMin,spMax){
+  const load=perfLoad();
+  const scale=load>220?0.35:load>150?0.55:load>90?0.75:1;
+  const n=Math.max(2,Math.round(count*scale));
+  for(let i=0;i<n;i++){
+    const a=rand(0,Math.PI*2),sp=rand(spMin,spMax);
+    emitParticle(x,y,Math.cos(a)*sp,Math.sin(a)*sp,life,color,rand(sizeMin,sizeMax));
+  }
+}
+
+// ---- Enemy Class ----
+class Enemy {
+  constructor(type, routeIdx, hpMul) {
+    const def = ENEMY_TYPES[type];
+    this.type = type;
+    this.name = def.name;
+    this.maxHp = Math.round(def.hp * hpMul);
+    this.hp = this.maxHp;
+    this.baseSpeed = def.speed;
+    this.speed = def.speed;
+    // 击杀奖励：20~29波递减，30波后固定30波水平，无上限
+    this.reward = Math.round(def.reward * 1.69 * (1 + (hpMul-1)*0.5));
+    if (G.wave > 20) {
+      const waveMul = G.wave >= 30 ? 30 : G.wave; // 30波后固定用30的乘数
+      let mul = Math.max(0.01, 1.0 - 0.075 * (waveMul - 20));
+      this.reward = Math.round(this.reward * mul);
+    }
+    this.size = def.size;
+    this.color = def.color;
+    this.armor = def.armor;
+    this.flying = def.flying;
+    this.stealth = def.stealth;
+    this.suicide = def.suicide||false;
+    this.routeIdx = routeIdx;
+    this.wp = ROUTES[routeIdx].waypoints;
+    this.wpIdx = 0;
+    this.x = this.wp[0].x;
+    this.y = this.wp[0].y;
+    this.alive = true;
+    this.reachedEnd = false;
+    this.hitFlash = 0;
+    this.slowTimer = 0;
+    this.slowAmount = 0;
+    this.angle = 0;
+    this.revealed = false; // for stealth
+  }
+  update(dt) {
+    if (!this.alive) return;
+    // Slow
+    if (this.slowTimer > 0) {
+      this.slowTimer -= dt * 60;
+      this.speed = this.baseSpeed * (1 - this.slowAmount);
+    } else {
+      this.speed = this.baseSpeed;
+    }
+    if (this.hitFlash > 0) this.hitFlash -= dt * 60;
+    // Move toward next waypoint
+    if (this.wpIdx >= this.wp.length) {
+      this.reachedEnd = true;
+      this.alive = false;
+      return;
+    }
+    const target = this.wp[this.wpIdx];
+    const dx = target.x - this.x;
+    const dy = target.y - this.y;
+    const moveSpeed = this.speed * 60 * dt;
+    const arrive = moveSpeed + 2;
+    const dSq = dx*dx + dy*dy;
+    if (dSq < arrive * arrive) {
+      this.x = target.x;
+      this.y = target.y;
+      this.wpIdx++;
+    } else {
+      const d = Math.sqrt(dSq);
+      this.x += (dx/d) * moveSpeed;
+      this.y += (dy/d) * moveSpeed;
+    }
+    this.angle = Math.atan2(dy, dx);
+  }
+  draw(ctx) {
+    if (!this.alive) return;
+    // Stealth: invisible unless revealed or close to core
+    if (this.stealth && !this.revealed && !G.reconActive) {
+      ctx.strokeStyle = 'rgba(74,74,106,0.15)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(this.x,this.y,this.size+2,0,Math.PI*2); ctx.stroke();
+      return;
+    }
+    const s = this.size;
+    const c = this.hitFlash > 0 ? '#ffffff' : this.color;
+    const flash = this.hitFlash > 0;
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath(); ctx.ellipse(this.x,this.y+3,s*1.2,(this.flying?3:s*0.4),0,0,Math.PI*2); ctx.fill();
+    // Flying indicator: dashed altitude ring
+    if(this.flying){
+      ctx.strokeStyle = 'rgba(100,180,255,0.35)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3,4]);
+      ctx.beginPath(); ctx.arc(this.x,this.y,s*1.7,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+    }else{
+      // Ground unit: extra heavy footprint shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath(); ctx.ellipse(this.x,this.y+5,s*1.6,s*0.7,0,0,Math.PI*2); ctx.fill();
+    }
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.angle);
+    ctx.shadowColor = c;
+    ctx.shadowBlur = flash?12:4;
+    // ========== Friendly militia (green) ==========
+    if (this.friendly) {
+      // Raiden3-style APC with dome turret
+      // Hull
+      ctx.fillStyle = flash?'#fff':'#66aa66';
+      ctx.beginPath();
+      ctx.moveTo(-s*1.1,-s*0.4);
+      ctx.lineTo(-s*0.6,-s*0.8);
+      ctx.lineTo(s*0.6,-s*0.8);
+      ctx.lineTo(s*1.1,-s*0.4);
+      ctx.lineTo(s*1.1,s*0.4);
+      ctx.lineTo(s*0.6,s*0.8);
+      ctx.lineTo(-s*0.6,s*0.8);
+      ctx.lineTo(-s*1.1,s*0.4);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = flash?'#fff':'#88cc88';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // Tracks
+      ctx.fillStyle = flash?'#fff':'#447744';
+      ctx.fillRect(-s*1.2,-s*0.6,0.25*s,s*1.2);
+      ctx.fillRect(s*1.0,-s*0.6,0.25*s,s*1.2);
+      for(let i=0;i<5;i++){
+        const ty = -s*0.5 + i*0.3*s;
+        ctx.fillStyle = flash?'#fff':'#559955';
+        ctx.fillRect(-s*1.25,ty,0.35*s,2);
+        ctx.fillRect(s*0.9,ty,0.35*s,2);
+      }
+      // Dome turret
+      ctx.fillStyle = flash?'#fff':'#55aa55';
+      ctx.beginPath(); ctx.arc(0.2*s,0,0.35*s,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = flash?'#fff':'#88dd88';
+      ctx.beginPath(); ctx.arc(0.2*s,-0.1*s,0.1*s,0,Math.PI*2); ctx.fill();
+      ctx.restore(); ctx.shadowBlur = 0;
+      if (this.stealth) {
+        ctx.strokeStyle = 'rgba(100,150,255,0.4)';
+        ctx.setLineDash([3,3]); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(this.x,this.y,s+4,0,Math.PI*2); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      const hpR = this.hp/this.maxHp;
+      if (hpR < 1) {
+        const bw = s*2.5, bh = 3;
+        const bx = this.x-bw/2, by = this.y-s-8;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(bx-1,by-1,bw+2,bh+2);
+        ctx.fillStyle = hpR>.5?'#44cc44':hpR>.25?'#ddcc44':'#ee4444';
+        if (hpR>.01) ctx.fillRect(bx,by,bw*hpR,bh);
+      }
+      return;
+    }
+    // ========== FLYING UNITS (Raiden3 style) ==========
+    if (this.flying) {
+      const wingC = flash?'#fff':c+'88';
+      // Type-specific body
+      if (this.suicide) {
+        // Suicide drone: compact delta with pulsing core
+        ctx.fillStyle = c; ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(s*1.3,0);
+        ctx.lineTo(0,-s*0.8);
+        ctx.lineTo(-s*1.0,0);
+        ctx.lineTo(0,s*0.8);
+        ctx.closePath(); ctx.fill();
+        // Wing fins
+        ctx.fillStyle = wingC;
+        ctx.beginPath();
+        ctx.moveTo(-s*0.2,-s*0.5);
+        ctx.lineTo(-s*1.3,-s*0.9);
+        ctx.lineTo(-s*0.6,-s*0.1);
+        ctx.closePath(); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-s*0.2,s*0.5);
+        ctx.lineTo(-s*1.3,s*0.9);
+        ctx.lineTo(-s*0.6,s*0.1);
+        ctx.closePath(); ctx.fill();
+        // Pulsing core
+        ctx.fillStyle = `rgba(255,80,80,${0.4+0.3*Math.sin(G.frame*0.12)})`;
+        ctx.shadowBlur = 15;
+        ctx.beginPath(); ctx.arc(0,0,s*0.3,0,Math.PI*2); ctx.fill();
+        // Engine glow
+        ctx.fillStyle = `rgba(255,50,0,${0.3+0.2*Math.sin(G.frame*0.1)})`;
+        ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(-s*0.8,0,s*0.2,0,Math.PI*2); ctx.fill();
+      } else if (this.type === 3 || this.type === 5) {
+        // Cruise / tomahawk missile: sleek arrow
+        ctx.fillStyle = c; ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.moveTo(s*1.4,0);
+        ctx.lineTo(s*0.6,-s*0.5);
+        ctx.lineTo(-s*1.0,-s*0.5);
+        ctx.lineTo(-s*1.0,s*0.5);
+        ctx.lineTo(s*0.6,s*0.5);
+        ctx.closePath(); ctx.fill();
+        // Tail fins
+        ctx.fillStyle = flash?'#fff':c+'aa';
+        ctx.beginPath();
+        ctx.moveTo(-s*0.9,-s*0.4);
+        ctx.lineTo(-s*1.6,-s*0.9);
+        ctx.lineTo(-s*1.1,-s*0.1);
+        ctx.closePath(); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-s*0.9,s*0.4);
+        ctx.lineTo(-s*1.6,s*0.9);
+        ctx.lineTo(-s*1.1,s*0.1);
+        ctx.closePath(); ctx.fill();
+        // Nose cone highlight
+        ctx.fillStyle = flash?'#fff':c+'cc';
+        ctx.beginPath(); ctx.arc(s*0.9,0,s*0.2,0,Math.PI*2); ctx.fill();
+      } else if (this.type === 4) {
+        // F-16: large fighter with delta wing + tail
+        ctx.fillStyle = c; ctx.shadowBlur = 6;
+        // Fuselage
+        ctx.beginPath();
+        ctx.moveTo(s*1.6,0);
+        ctx.lineTo(s*0.6,-s*0.4);
+        ctx.lineTo(-s*0.8,-s*0.4);
+        ctx.lineTo(-s*1.2,-s*0.3);
+        ctx.lineTo(-s*1.2,s*0.3);
+        ctx.lineTo(-s*0.8,s*0.4);
+        ctx.lineTo(s*0.6,s*0.4);
+        ctx.closePath(); ctx.fill();
+        // Delta wings
+        ctx.fillStyle = wingC;
+        ctx.beginPath();
+        ctx.moveTo(-s*0.2,-s*0.35);
+        ctx.lineTo(-s*2.0,-s*1.1);
+        ctx.lineTo(-s*0.6,-s*0.1);
+        ctx.closePath(); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-s*0.2,s*0.35);
+        ctx.lineTo(-s*2.0,s*1.1);
+        ctx.lineTo(-s*0.6,s*0.1);
+        ctx.closePath(); ctx.fill();
+        // Tail fin
+        ctx.fillStyle = wingC;
+        ctx.beginPath();
+        ctx.moveTo(-s*0.2,-s*0.3);
+        ctx.lineTo(-s*0.6,-s*0.9);
+        ctx.lineTo(-s*0.9,-s*0.3);
+        ctx.closePath(); ctx.fill();
+        // Cockpit
+        ctx.fillStyle = flash?'#fff':'#6688cc';
+        ctx.beginPath(); ctx.ellipse(s*0.5,0,s*0.25,s*0.15,0,0,Math.PI*2); ctx.fill();
+        // Engine glow
+        ctx.fillStyle = flash?'#fff':`rgba(255,150,50,${0.4+0.2*Math.sin(G.frame*0.08)})`;
+        ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(-s*1.1,0,s*0.25,0,Math.PI*2); ctx.fill();
+        // Wingtip missiles
+        ctx.fillStyle = flash?'#fff':'#666';
+        ctx.fillRect(-s*1.3,-s*1.0,0.4*s,3);
+        ctx.fillRect(-s*1.3,s*0.8,0.4*s,3);
+      } else if (this.type === 6) {
+        // Stealth: angular, faceted
+        ctx.fillStyle = c; ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.moveTo(s*1.4,0);
+        ctx.lineTo(s*0.4,-s*0.6);
+        ctx.lineTo(-s*0.2,-s*0.6);
+        ctx.lineTo(-s*0.6,-s*0.8);
+        ctx.lineTo(-s*0.8,-s*0.3);
+        ctx.lineTo(-s*1.0,-s*0.2);
+        ctx.lineTo(-s*1.0,s*0.2);
+        ctx.lineTo(-s*0.8,s*0.3);
+        ctx.lineTo(-s*0.6,s*0.8);
+        ctx.lineTo(-s*0.2,s*0.6);
+        ctx.lineTo(s*0.4,s*0.6);
+        ctx.closePath(); ctx.fill();
+        // Faceted wings
+        ctx.fillStyle = flash?'#fff':'#3a3a5a';
+        ctx.beginPath();
+        ctx.moveTo(0,-s*0.5);
+        ctx.lineTo(-s*0.3,-s*0.7);
+        ctx.lineTo(-s*1.5,-s*1.0);
+        ctx.lineTo(-s*0.5,-s*0.1);
+        ctx.closePath(); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(0,s*0.5);
+        ctx.lineTo(-s*0.3,s*0.7);
+        ctx.lineTo(-s*1.5,s*1.0);
+        ctx.lineTo(-s*0.5,s*0.1);
+        ctx.closePath(); ctx.fill();
+        // Cockpit slit
+        ctx.fillStyle = flash?'#fff':'#556688';
+        ctx.beginPath(); ctx.ellipse(s*0.3,0,s*0.2,0.08*s,0,0,Math.PI*2); ctx.fill();
+        // Serrated edge detail
+        ctx.fillStyle = flash?'#fff':'#2a2a4a';
+        for(let i=0;i<3;i++){
+          const ty = -s*0.3 + i*0.3*s;
+          ctx.fillRect(-s*0.3,ty,s*0.8,1);
+        }
+      } else {
+        // Default drone / generic flying: compact jet
+        ctx.fillStyle = c; ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.moveTo(s*1.2,0);
+        ctx.lineTo(s*0.4,-s*0.6);
+        ctx.lineTo(-s*0.8,-s*0.6);
+        ctx.lineTo(-s*1.0,0);
+        ctx.lineTo(-s*0.8,s*0.6);
+        ctx.lineTo(s*0.4,s*0.6);
+        ctx.closePath(); ctx.fill();
+        // Straight wings
+        ctx.fillStyle = wingC;
+        ctx.beginPath();
+        ctx.moveTo(-s*0.1,-s*0.5);
+        ctx.lineTo(-s*1.6,-s*0.7);
+        ctx.lineTo(-s*0.5,-s*0.1);
+        ctx.closePath(); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-s*0.1,s*0.5);
+        ctx.lineTo(-s*1.6,s*0.7);
+        ctx.lineTo(-s*0.5,s*0.1);
+        ctx.closePath(); ctx.fill();
+        // Cockpit
+        ctx.fillStyle = flash?'#fff':'#6688cc';
+        ctx.beginPath(); ctx.arc(s*0.3,0,s*0.15,0,Math.PI*2); ctx.fill();
+        // Engine pulse
+        ctx.fillStyle = flash?'#fff':`rgba(255,150,50,${0.3+0.2*Math.sin(G.frame*0.1)})`;
+        ctx.beginPath(); ctx.arc(-s*0.8,0,s*0.2,0,Math.PI*2); ctx.fill();
+      }
+    } else {
+      // ========== GROUND UNITS (Raiden3 style) ==========
+      if (this.type === 1) {
+        // IFV / APC: tracked vehicle — wide boxy hull, prominent turret
+        ctx.fillStyle = c; ctx.shadowBlur = 6;
+        // Hull (wide rectangle, clearly ground vehicle shape)
+        ctx.beginPath();
+        ctx.moveTo(-s*0.9,-s*0.8);
+        ctx.lineTo(s*0.9,-s*0.8);
+        ctx.lineTo(s*1.1,-s*0.4);
+        ctx.lineTo(s*1.1,s*0.4);
+        ctx.lineTo(s*0.9,s*0.8);
+        ctx.lineTo(-s*0.9,s*0.8);
+        ctx.lineTo(-s*1.1,s*0.4);
+        ctx.lineTo(-s*1.1,-s*0.4);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = flash?'#fff':darken(c,20);
+        ctx.lineWidth = 1.5; ctx.stroke();
+        // Left track band (thick dark band)
+        ctx.fillStyle = flash?'#fff':darken(c,40);
+        ctx.fillRect(-s*1.15,-s*0.7,0.3*s,s*1.4);
+        ctx.fillRect(s*0.85,-s*0.7,0.3*s,s*1.4);
+        // Track wheel dots
+        ctx.fillStyle = flash?'#fff':darken(c,25);
+        for(let i=0;i<5;i++){
+          const ty = -s*0.6 + i*0.3*s;
+          ctx.beginPath(); ctx.arc(-s*1.0,ty,s*0.08,0,Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(s*1.0,ty,s*0.08,0,Math.PI*2); ctx.fill();
+        }
+        // Turret (large circle, clearly visible)
+        ctx.fillStyle = flash?'#fff':c;
+        ctx.beginPath(); ctx.arc(0.2*s,0,s*0.45,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle = flash?'#fff':darken(c,15);
+        ctx.lineWidth = 1; ctx.stroke();
+        // Cannon barrel (long, extends well beyond hull)
+        ctx.fillStyle = flash?'#fff':darken(c,20);
+        ctx.fillRect(s*0.15,-0.06*s,0.8*s,0.12*s);
+        ctx.fillStyle = flash?'#fff':darken(c,40);
+        ctx.fillRect(s*0.85,-0.09*s,0.2*s,0.18*s);
+        // Hatch on turret
+        ctx.fillStyle = flash?'#fff':darken(c,10);
+        ctx.beginPath(); ctx.arc(0.1*s,-0.1*s,s*0.12,0,Math.PI*2); ctx.fill();
+      } else {
+        // Default ground: heavy tank
+        ctx.fillStyle = c; ctx.shadowBlur = 6;
+        // Hull
+        ctx.beginPath();
+        ctx.moveTo(-s*0.8,-s*0.7);
+        ctx.lineTo(s*0.8,-s*0.7);
+        ctx.lineTo(s*1.1,-s*0.3);
+        ctx.lineTo(s*1.1,s*0.3);
+        ctx.lineTo(s*0.8,s*0.7);
+        ctx.lineTo(-s*0.8,s*0.7);
+        ctx.lineTo(-s*1.1,s*0.3);
+        ctx.lineTo(-s*1.1,-s*0.3);
+        ctx.closePath(); ctx.fill();
+        // Track wheels
+        ctx.fillStyle = flash?'#fff':darken(c,30);
+        for(let i=0;i<3;i++){
+          const tx = -s*0.5 + i*0.5*s;
+          ctx.beginPath(); ctx.arc(tx,-s*0.55,s*0.12,0,Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(tx,s*0.55,s*0.12,0,Math.PI*2); ctx.fill();
+        }
+        // Turret
+        ctx.fillStyle = flash?'#fff':c;
+        ctx.beginPath();
+        ctx.moveTo(-s*0.2,-s*0.5);
+        ctx.lineTo(s*0.4,-s*0.5);
+        ctx.lineTo(s*0.6,-s*0.1);
+        ctx.lineTo(-s*0.2,s*0.1);
+        ctx.closePath(); ctx.fill();
+        // Cannon barrel (longer)
+        ctx.fillStyle = flash?'#fff':darken(c,15);
+        ctx.fillRect(s*0.35,-0.05*s,0.7*s,0.1*s);
+        ctx.fillStyle = flash?'#fff':darken(c,30);
+        ctx.fillRect(s*0.9,-0.08*s,0.2*s,0.16*s);
+        // Armor plate detail
+        ctx.fillStyle = flash?'#fff':darken(c,10);
+        ctx.fillRect(-s*0.5,-s*0.4,0.3*s,0.04*s);
+        ctx.fillRect(-s*0.5,0.3*s,0.3*s,0.04*s);
+      }
+    }
+    ctx.restore();
+    ctx.shadowBlur = 0;
+    // Stealth indicator (if revealed)
+    if (this.stealth) {
+      ctx.strokeStyle = 'rgba(100,150,255,0.4)';
+      ctx.setLineDash([3,3]);
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(this.x,this.y,s+4,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // Suicide glow override (subtle outer ring)
+    if (this.suicide) {
+      ctx.fillStyle = `rgba(255,50,50,${0.15+0.15*Math.sin(G.frame*0.1)})`;
+      ctx.beginPath(); ctx.arc(this.x,this.y,s+3,0,Math.PI*2); ctx.fill();
+    }
+    // HP bar
+    const hpR = this.hp/this.maxHp;
+    if (hpR < 1) {
+      const bw = s*2.5, bh = 3;
+      const bx = this.x-bw/2, by = this.y-s-10;
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(bx-1,by-1,bw+2,bh+2);
+      ctx.fillStyle = hpR>.5?'#44cc44':hpR>.25?'#ddcc44':'#ee4444';
+      if (hpR>.01) ctx.fillRect(bx,by,bw*hpR,bh);
+    }
+  }
+}
+
+// ---- Tower Class ----
+class Tower {
+  constructor(slotIdx, type) {
+    const def = TOWER_TYPES[type];
+    this.slotIdx = slotIdx;
+    this.type = type;
+    this.level = 0;
+    this.x = G.slots[slotIdx].x;
+    this.y = G.slots[slotIdx].y;
+    this.name = def.name;
+    this.cost = def.cost;
+    this.color = def.color;
+    this.shape = def.shape;
+    this.hitAir = def.hitAir;
+    this.hitGround = def.hitGround;
+    this.groundOnly = def.groundOnly;
+    this.upgradeCosts = def.upgrades;
+    this.sellRatio = def.sellRatio;
+    this.totalUpgradeCost = 0;
+    this.target = null;
+    this.cooldown = 0;
+    this.angle = 0;
+    this.animTimer = 0;
+    this.lastTarget = null;
+  }
+  get dmg() { return TOWER_TYPES[this.type].dmg[this.level] || 0; }
+  get dmgAir() { return TOWER_TYPES[this.type].dmgAir ? TOWER_TYPES[this.type].dmgAir[this.level] : this.dmg; }
+  get range() { return TOWER_TYPES[this.type].range[this.level] || 0; }
+  get cd() { return TOWER_TYPES[this.type].cd[this.level] || 30; }
+  get slow() { return TOWER_TYPES[this.type].slow ? TOWER_TYPES[this.type].slow[this.level] : 0; }
+  get splash() { return TOWER_TYPES[this.type].splash ? TOWER_TYPES[this.type].splash[this.level] : 0; }
+  update(dt) {
+    if (this.cooldown > 0) this.cooldown -= dt * 60;
+    this.animTimer += dt;
+    // Jammer: apply slow aura + reveal stealth — now handled in global pass for speed
+    if (this.cooldown > 0 && this.type !== 2) return;
+    // Frame-skip: towers only search for targets every 3 frames (huge perf win)
+    if (G.frame % 3 !== (this.x % 3 + this.y % 3 + 3) % 3) return;
+    const rangeSq = this.range * this.range;
+    // Find target
+    let target = null;
+    if (this.type === 2) {
+      // Jammer: cycle targeting, prefer unslowed enemies
+      // Priority 1: not slowed and not last target
+      for (const e of G.enemies) {
+        if (!e.alive || e.reachedEnd || e.friendly) continue;
+        if (distSq(this,e) > rangeSq) continue;
+        const canHit = (e.flying && this.hitAir) || (!e.flying && this.hitGround);
+        if (!canHit) continue;
+        if (e.slowTimer <= 0 && e !== this.lastTarget) { target = e; break; }
+      }
+      // Priority 2: not slowed (any)
+      if (!target) {
+        for (const e of G.enemies) {
+          if (!e.alive || e.reachedEnd || e.friendly) continue;
+          if (distSq(this,e) > rangeSq) continue;
+          const canHit = (e.flying && this.hitAir) || (!e.flying && this.hitGround);
+          if (!canHit) continue;
+          if (e.slowTimer <= 0) { target = e; break; }
+        }
+      }
+      // Priority 3: any enemy in range
+      if (!target) {
+        for (const e of G.enemies) {
+          if (!e.alive || e.reachedEnd || e.friendly) continue;
+          if (distSq(this,e) > rangeSq) continue;
+          const canHit = (e.flying && this.hitAir) || (!e.flying && this.hitGround);
+          if (!canHit) continue;
+          target = e; break;
+        }
+      }
+    } else {
+      // Standard focus-fire
+      const locked = this.target;
+      if (locked && locked.alive && !locked.reachedEnd) {
+        const dSq = distSq(this, locked);
+        if (dSq <= rangeSq) {
+          const canHit = (locked.flying && this.hitAir) || (!locked.flying && this.hitGround);
+          if (canHit) target = locked;
+        }
+      }
+      if (!target) {
+        let bestPri = -Infinity;
+        for (const e of G.enemies) {
+          if (!e.alive || e.reachedEnd || e.friendly) continue;
+          const dSq = distSq(this, e);
+          if (dSq > rangeSq) continue;
+          const canHit = (e.flying && this.hitAir) || (!e.flying && this.hitGround);
+          if (!canHit) continue;
+          const pri = e.wpIdx * 1000 - dSq;
+          if (pri > bestPri) { bestPri = pri; target = e; }
+        }
+      }
+    }
+    if (target) {
+      this.target = target;
+      this.angle = Math.atan2(target.y - this.y, target.x - this.x);
+      if (this.cooldown <= 0) {
+        this.cooldown = this.cd;
+        if (this.type === 2) {
+          // Jammer: fire slow projectile
+          this.lastTarget = target;
+          G.projs.push(new Projectile(this.x,this.y,target,this.dmg||1,this.color+'aa',this.splash,true,this.slow));
+        } else {
+          // Use dmgAir for flying targets if tower has separate air damage
+          const fireDmg = (target.flying && TOWER_TYPES[this.type].dmgAir) ? this.dmgAir : this.dmg;
+          G.projs.push(new Projectile(this.x,this.y,target,fireDmg,this.color+'cc',this.splash));
+        }
+      }
+    }
+  }
+  remove() {
+    this._removePending = true;
+    G.slots[this.slotIdx].occupied = false;
+  }
+  draw(ctx) {
+    const def = TOWER_TYPES[this.type];
+    const s = 16;
+    const body = this.level>0?lighten(this.color,this.level*16):this.color;
+    const trim = this.level>0?'#ffd36a':'rgba(230,235,225,0.65)';
+    // Reinforced base and ground shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.32)';
+    ctx.beginPath(); ctx.ellipse(this.x,this.y+5,s*1.45,5,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(18,22,24,0.9)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(this.x-s*1.08,this.y-s*0.82,s*2.16,s*1.64,5);
+    ctx.fill(); ctx.stroke();
+    // Range indicator (when hovered or selected)
+    if (G.selectedTower === this) {
+      ctx.fillStyle = 'rgba(245,197,66,0.045)';
+      ctx.beginPath(); ctx.arc(this.x,this.y,this.range,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = 'rgba(245,197,66,0.22)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([7,7]);
+      ctx.beginPath(); ctx.arc(this.x,this.y,this.range,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.save();
+    ctx.translate(this.x,this.y);
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 8;
+    ctx.strokeStyle = trim;
+    ctx.lineWidth = 1.5;
+    if (this.type === 0) {
+      ctx.fillStyle = body;
+      ctx.beginPath();
+      ctx.roundRect(-s*0.9,-s*0.65,s*1.8,s*1.3,4);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = darken(this.color,32);
+      ctx.fillRect(-s*1.0,-s*0.55,4,s*1.1);
+      ctx.fillRect(s*0.72,-s*0.55,4,s*1.1);
+      ctx.rotate(this.angle);
+      ctx.fillStyle = '#20252a';
+      ctx.beginPath(); ctx.arc(0,0,s*0.42,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = trim; ctx.stroke();
+      ctx.fillStyle = '#d7d2c6';
+      ctx.fillRect(s*0.15,-2.5,s*1.05,2.2);
+      ctx.fillRect(s*0.15,1.2,s*1.05,2.2);
+      ctx.fillStyle = '#f3d07a';
+      ctx.fillRect(s*1.12,-3.3,5,1.8);
+      ctx.fillRect(s*1.12,1.8,5,1.8);
+    } else if (this.type === 1) {
+      ctx.rotate(this.angle);
+      ctx.fillStyle = darken(this.color,12);
+      ctx.beginPath();
+      ctx.moveTo(0,-s*1.15);
+      ctx.lineTo(s*1.08,0);
+      ctx.lineTo(0,s*1.15);
+      ctx.lineTo(-s*1.08,0);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = body;
+      ctx.beginPath(); ctx.roundRect(-s*0.55,-s*0.38,s*1.1,s*0.76,3); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#dfe8ea';
+      ctx.fillRect(s*0.25,-2,s*1.15,4);
+      ctx.fillStyle = '#ff8a42';
+      ctx.beginPath(); ctx.arc(s*1.45,0,3,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.fillRect(-s*0.26,-s*0.18,s*0.34,s*0.36);
+    } else if (this.type === 2) {
+      ctx.fillStyle = body;
+      ctx.beginPath();
+      for(let i=0;i<6;i++){let a=Math.PI/3*i-Math.PI/6;ctx.lineTo(Math.cos(a)*s*1.08,Math.sin(a)*s*1.08)}
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = `rgba(120,220,150,${0.28+0.12*Math.sin(G.frame*0.05)})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0,0,s*0.72,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,s*1.45,0,Math.PI*2); ctx.stroke();
+      ctx.strokeStyle = '#ccf4c9';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.cos(this.animTimer*2)*s*0.8,Math.sin(this.animTimer*2)*s*0.8); ctx.stroke();
+      ctx.fillStyle = '#b8ffb0';
+      ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2); ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+    ctx.restore();
+    // Level stars — bigger, with glow
+    if (this.level > 0) {
+      const starY = this.y - s - 6;
+      const starStart = this.x - (this.level-1)*6;
+      for(let i=0;i<this.level;i++){
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 6;
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', starStart + i*12, starY);
+        ctx.shadowBlur = 0;
+      }
+      // Level badge circle
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.beginPath(); ctx.arc(this.x, starY-14, 8, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#ffd700';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Lv'+(this.level+1), this.x, starY-14);
+      ctx.textBaseline = 'alphabetic';
+    }
+  }
+}
+
+function lighten(c,amt){
+  const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);
+  return `rgb(${Math.min(255,r+amt)},${Math.min(255,g+amt)},${Math.min(255,b+amt)})`;
+}
+function darken(c,amt){
+  const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);
+  return `rgb(${Math.max(0,r-amt)},${Math.max(0,g-amt)},${Math.max(0,b-amt)})`;
+}
+
+// ---- Projectile Class ----
+class Projectile {
+  constructor(x,y,target,dmg,color,splash,isSlow,slowAmount){
+    this.x=x;this.y=y;this.target=target;this.dmg=dmg;this.color=color;
+    this.speed=6;this.alive=true;this.splash=splash||0;this.isSlow=isSlow||false;
+    this.slowAmount=slowAmount||0;this.trail=[];
+  }
+  update(dt) {
+    if(!this.alive)return;
+    if(!this.target||!this.target.alive){this.alive=false;return;}
+    const dx=this.target.x-this.x,dy=this.target.y-this.y;
+    const hitRange=this.speed+this.target.size;
+    const dSq=dx*dx+dy*dy;
+    if(dSq<hitRange*hitRange){
+      this.hit();
+    }else{
+      if(G.frame%2===0)this.trail.push({x:this.x,y:this.y,life:.3});
+      if(this.trail.length>(this.isSlow?4:3))this.trail.shift();
+      const d=Math.sqrt(dSq);
+      this.x+=(dx/d)*this.speed;
+      this.y+=(dy/d)*this.speed;
+    }
+  }
+  hit(){
+    this.alive=false;
+    const t=this.target;
+    if(!t||!t.alive)return;
+    const dmg=this.dmg*(1-(t.armor||0));
+    t.hp-=dmg;
+    t.hitFlash=5;
+    // Splash
+    if(this.splash>0){
+      const splashSq=this.splash*this.splash;
+      for(const e of G.enemies){
+        if(e===t||!e.alive)continue;
+        if(distSq(this,e)<=splashSq){
+          e.hp-=this.dmg*0.5*(1-(e.armor||0));
+          e.hitFlash=4;
+          if(e.hp<=0)killEnemy(e);
+        }
+      }
+    }
+    // Slow projectile (jammer)
+    if(this.isSlow){
+      t.slowTimer=90;
+      t.slowAmount=Math.max(t.slowAmount||0,this.slowAmount);
+      if(t.stealth)t.revealed=true;
+    }
+    if(t.hp<=0)killEnemy(t);
+    // Impact particles
+    const c=this.color;
+    emitBurst(t.x,t.y,8,c,2,5,0.4,30,100);
+    // Splash particles
+    if(this.splash>0){
+      emitBurst(t.x,t.y,12,'#ff8844',3,7,0.6,50,150);
+    }
+  }
+  draw(ctx){
+    if(!this.alive)return;
+    if(this.trail.length>1){
+      ctx.save();
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.shadowColor=this.color;
+      ctx.shadowBlur=this.isSlow?7:4;
+      ctx.strokeStyle=colorAlpha(this.color,this.isSlow?0.22:0.16);
+      ctx.lineWidth=this.isSlow?2.6:1.6;
+      ctx.beginPath();
+      ctx.moveTo(this.trail[0].x,this.trail[0].y);
+      for(let i=1;i<this.trail.length;i++) ctx.lineTo(this.trail[i].x,this.trail[i].y);
+      ctx.lineTo(this.x,this.y);
+      ctx.stroke();
+      ctx.strokeStyle=colorAlpha('#ffffff',this.isSlow?0.24:0.18);
+      ctx.lineWidth=0.8;
+      ctx.stroke();
+      ctx.restore();
+    }
+    // Projectile
+    ctx.shadowColor=this.color;
+    ctx.shadowBlur=this.isSlow?9:6;
+    ctx.fillStyle=this.color;
+    ctx.beginPath();ctx.arc(this.x,this.y,this.isSlow?4:3,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.55)';
+    ctx.beginPath();ctx.arc(this.x-1,this.y-1,1.2,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
+  }
+}
+
+// ---- Wave System ----
+function generateWave(waveNum) {
+  const entries=[];
+  // Each wave: split enemies between West (route 0) and South (route 1)
+  const droneCount=Math.min(3+waveNum,12); // 无人机上限12，避免后期太多
+  entries.push({type:0,count:Math.ceil(droneCount/2),route:0,interval:15,delay:0});
+  entries.push({type:0,count:Math.floor(droneCount/2),route:1,interval:15,delay:5});
+  if(waveNum>=2){
+    let n=1+Math.floor((waveNum-2)/3);
+    entries.push({type:1,count:Math.ceil(Math.min(n,6)/2),route:0,interval:40,delay:30});
+    entries.push({type:1,count:Math.floor(Math.min(n,6)/2),route:1,interval:40,delay:35});
+  }
+  if(waveNum>=3){
+    let n=1+Math.floor((waveNum-3)/2);
+    entries.push({type:2,count:Math.ceil(Math.min(n,8)/2),route:0,interval:25,delay:50});
+    entries.push({type:2,count:Math.floor(Math.min(n,8)/2),route:1,interval:25,delay:55});
+  }
+  if(waveNum>=4){
+    let n=1+Math.floor((waveNum-4)/2);
+    entries.push({type:3,count:Math.ceil(Math.min(n,6)/2),route:0,interval:20,delay:70});
+    entries.push({type:3,count:Math.floor(Math.min(n,6)/2),route:1,interval:20,delay:75});
+  }
+  if(waveNum>=6){
+    let n=1+Math.floor((waveNum-6)/4);
+    if(n>=1){entries.push({type:4,count:Math.ceil(Math.min(n,4)/2),route:0,interval:60,delay:90});}
+    if(n>=2){entries.push({type:4,count:Math.floor(Math.min(n,4)/2),route:1,interval:60,delay:95});}
+  }
+  if(waveNum>=8){
+    let n=1+Math.floor((waveNum-8)/3);
+    entries.push({type:5,count:Math.ceil(Math.min(n,6)/2),route:0,interval:30,delay:100});
+    entries.push({type:5,count:Math.floor(Math.min(n,6)/2),route:1,interval:30,delay:105});
+  }
+  if(waveNum%5===0){
+    let n=1+Math.floor(waveNum/5);
+    entries.push({type:6,count:Math.ceil(Math.min(n,4)/2),route:0,interval:80,delay:40});
+    entries.push({type:6,count:Math.floor(Math.min(n,4)/2),route:1,interval:80,delay:45});
+  }
+  return entries;
+}
+
+function balanceWaveEntries(entries,waveNum){
+  const desiredTotal = Math.round(10 + waveNum * 1.45 + Math.sqrt(waveNum) * 3);
+  const maxTotal = 82;
+  const budget = Math.min(maxTotal, desiredTotal);
+  const rawTotal = entries.reduce((sum,e)=>sum+e.count,0);
+  if(rawTotal <= budget) return entries;
+  const scale = budget / rawTotal;
+  let total = 0;
+  for(const e of entries){
+    e.count = Math.max(1, Math.round(e.count * scale));
+    total += e.count;
+  }
+  while(total > budget){
+    let biggest = null;
+    for(const e of entries){
+      if(e.count <= 1) continue;
+      if(!biggest || e.count > biggest.count) biggest = e;
+    }
+    if(!biggest) break;
+    biggest.count--;
+    total--;
+  }
+  return entries;
+}
+
+function startWave(){
+  if(G.waveInProgress||G.wave>=50)return;
+  G.wave++;
+  G.waveInProgress=true;
+  G.spawnQueue=[];
+  G.spawnIndex=0;
+  G.allSpawned=false;
+  const hpMul=(1+(G.wave-1)*0.105)*Math.pow(1.18,Math.floor(G.wave/10));
+  const entries=generateWave(G.wave);
+  const waveMult=1 + Math.min(1.15, G.wave * 0.018 + Math.floor(G.wave/10) * 0.08);
+  const paceMul=G.wave>=30 ? 0.72 : G.wave>=20 ? 0.82 : 1;
+  for(const e of entries){
+    e.count = Math.max(1, Math.round(e.count * waveMult));
+  }
+  balanceWaveEntries(entries,G.wave);
+  for(const e of entries){
+    for(let i=0;i<e.count;i++){
+      G.spawnQueue.push({type:e.type,route:e.route,delay:e.delay+i*Math.max(8,e.interval*paceMul),hpMul:hpMul});
+    }
+  }
+  // Shuffle within each route group to mix entry points
+  G.spawnQueue.sort((a,b)=>a.delay-b.delay);
+  G.spawnTimer=0;
+  document.getElementById('wave-btn').disabled=true;
+  showToast(`🌊 第 ${G.wave} 波开始！`);
+  updateHUD();
+  // 触发基地轰炸（第6波起）
+  triggerBaseBombardment(G.wave);
+  // 音效
+  sfxWaveStart();
+  if(G.wave === 1) setTimeout(sfxPlayBGM, 500);
+}
+
+function updateWave(dt){
+  if(!G.waveInProgress)return;
+  G.spawnTimer+=dt*60;
+  while(G.spawnIndex<G.spawnQueue.length&&G.spawnQueue[G.spawnIndex].delay<=G.spawnTimer){
+    const e=G.spawnQueue[G.spawnIndex++];
+    const enemy=new Enemy(e.type,e.route,e.hpMul);
+    G.enemies.push(enemy);
+  }
+  if(G.spawnIndex>=G.spawnQueue.length)G.allSpawned=true;
+  // Check wave complete
+  if(G.allSpawned){
+    const alive=G.enemies.some(e=>e.alive);
+    if(!alive){
+      G.waveInProgress=false;
+      G.allSpawned=false;
+      let waveGold;
+      // 20波前保持原始奖金
+      if(G.wave<20){
+        waveGold=30+G.wave*5;
+      }else if(G.wave<30){
+        waveGold=80+(G.wave-20)*3; // 20~29关: 80→107, +3/关
+      }else if(G.wave<40){
+        waveGold=110+(G.wave-30)*2; // 30~39关: 110→128, +2/关
+      }else{
+        waveGold=130+(G.wave-40)*1; // 40~49关: 130→139, +1/关
+      }
+      // 20波后削减奖金，自然累计无上限
+      if(G.wave>20){
+        if(G.wave<=25)      waveGold=50-(G.wave-20)*4;  // 21~25: 50→30
+        else if(G.wave<=30) waveGold=30-(G.wave-25)*3;  // 26~30: 30→15
+        else if(G.wave<=35) waveGold=10;                // 31~35: 10
+        else if(G.wave<=40) waveGold=8;                 // 36~40: 8
+        else                waveGold=5;                 // 41~49: 5
+      }
+      // 第50关固定
+      if(G.wave===50) waveGold=140;
+      // 20波后奖金提升20%
+      if(G.wave>20) waveGold=Math.round(waveGold*1.2);
+      G.gold+=waveGold;
+      G.sp += 10;  // 支援不设上限
+      // 基地回血：连续3波不被攻击则回满
+      for(const key of Object.keys(G.bases)){
+        const b = G.bases[key];
+        if(b.hp >= b.maxHp) { b.wavesSinceHit = 0; continue; }
+        if(b.hp > 0){
+          b.wavesSinceHit++;
+          if(b.wavesSinceHit >= 3){
+            b.hp = b.maxHp;
+            b.wavesSinceHit = 0;
+            showToast(`🔋 ${key}方基地已回满血`);
+          }
+        }
+      }
+      showToast(`✅ 第 ${G.wave} 波完成！+$${waveGold}`);
+      sfxCoin();
+      if(G.wave>=50){
+        G.phase='won';
+        sfxVictory();
+        showOverlay('🎉 胜利！','你成功保卫了波斯铁卫的核心！<br>击杀: '+G.kills+' | 总收益: $'+G.goldEarned+' | 剩余核心: '+G.coreHP,restartGame);
+      }
+      document.getElementById('wave-btn').disabled=false;
+      updateHUD();
+    }
+  }
+}
+
+function killEnemy(e){
+  if(!e.alive)return;
+  e.alive=false;
+  G.gold+=e.reward;
+  G.kills++;
+  G.goldEarned+=e.reward;
+  // 击杀充能：每次击杀得1点，攒够 missileCost 转1发飞弹
+  G.missileCharge++;
+  if(G.missileCharge >= G.missileCost){
+    G.missileCharge -= G.missileCost;
+    G.missileReady++;
+  }
+  // Death particles
+  emitBurst(e.x,e.y,10,e.color,2,5,0.5,30,120);
+  // HUD is refreshed on a fixed cadence in update() to avoid kill-spike DOM churn.
+}
+
+// ---- Support Systems ----
+function summonMilitia(){
+  if(G.sp<50)return;
+  G.sp-=50;
+  // 每条兵线各3个，从核心出发逆向行驶
+  for(let ri=0;ri<ROUTES.length;ri++){
+    for(let i=0;i<3;i++){
+      const e=new Enemy(1,ri,0.6);
+      e.x=CORE_X+rand(-30,30);
+      e.y=CORE_Y+rand(-30,30);
+      e.alive=true;
+      e.wpIdx=0;
+      e.wp=ROUTES[ri].waypoints.slice().reverse();
+      e.hp=60;e.maxHp=60;e.baseSpeed=2.38;e.speed=2.38;e.reward=0;
+      e.color='#88cc88';e.friendly=true;
+      G.enemies.push(e);
+    }
+  }
+  showToast('⚡ 民兵已召唤！');
+  updateHUD();
+}
+
+function useRecon(){
+  if(G.reconCD>0)return;
+  G.reconCD=G.reconMaxCD;
+  let count=0;
+  for(let ri=0;ri<ROUTES.length;ri++){
+    const r=ROUTES[ri];
+    const wps=r.waypoints;
+    const drone={x:wps[wps.length-1].x,y:wps[wps.length-1].y,alive:true,
+      wp:wps.slice().reverse(),wpIdx:0,speed:2.5,detectRange:130,routeIdx:ri};
+    drone.update=function(dt){
+      if(!this.alive)return;
+      if(this.wpIdx>=this.wp.length){this.alive=false;return;}
+      const t=this.wp[this.wpIdx];
+      const dx=t.x-this.x,dy=t.y-this.y;
+      const ms=this.speed*60*dt;
+      const arrive=ms+2;
+      const dSq=dx*dx+dy*dy;
+      if(dSq<arrive*arrive){this.x=t.x;this.y=t.y;this.wpIdx++;}
+      else{const d=Math.sqrt(dSq);this.x+=dx/d*ms;this.y+=dy/d*ms;}
+      // Reveal stealth in range
+      const detectSq=this.detectRange*this.detectRange;
+      for(const e of G.enemies){
+        if(e.stealth&&!e.revealed&&distSq(e,this)<detectSq)
+          e.revealed=true;
+      }
+      // Collision: drone rams ANY flying enemy — one drone one kill
+      for(const e of G.enemies){
+        if(!e.alive||!e.flying)continue;
+        const hit=e.size+8;
+        if(distSq(e,this)<hit*hit){
+          e.hp=0;e.hitFlash=10;
+          this.alive=false;
+          sfxDroneKill();
+          emitBurst(this.x,this.y,12,'#66ccff',2,5,0.5,30,120);
+          if(e.hp<=0)killEnemy(e);
+          break;
+        }
+      }
+    };
+    drone.draw=function(ctx){
+      if(!this.alive)return;
+      // Detection circle
+      ctx.strokeStyle='rgba(100,200,255,0.12)';
+      ctx.lineWidth=1;ctx.setLineDash([4,6]);
+      ctx.beginPath();ctx.arc(this.x,this.y,this.detectRange,0,Math.PI*2);ctx.stroke();
+      ctx.setLineDash([]);
+      // Drone body
+      ctx.fillStyle='#66ccff';ctx.shadowColor='#66ccff';ctx.shadowBlur=8;
+      ctx.beginPath();ctx.arc(this.x,this.y,5,0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.fillStyle='#fff';
+      ctx.beginPath();ctx.arc(this.x,this.y,2,0,Math.PI*2);ctx.fill();
+    };
+    G.reconDrones.push(drone);
+    count++;
+  }
+  showToast(`🔍 ${count}架侦察无人机出动！`);
+  updateHUD();
+}
+
+// ---- Base Bombardment (美军基地导弹突袭) ----
+function triggerBaseBombardment(waveNum) {
+  if (waveNum < 6) return;
+  // 检查是否所有基地都被摧毁 — 被摧毁就不能再发射导弹
+  const aliveBases = BASE_POSITIONS.filter(bp => (G.bases[bp.dir]?.hp||0) > 0);
+  if (aliveBases.length === 0) return;
+  // 数量：第6波起每波2发，每5波+2发，不超过炮塔总数-2
+  const wavesSince6 = waveNum - 6;
+  const growthCycles = Math.floor(wavesSince6 / 5);
+  let count = 2 + growthCycles * 2;
+  const aliveTowers = G.towers.filter(t => !t._removePending);
+  const maxMiss = Math.max(0, aliveTowers.length - 2);
+  count = Math.min(count, maxMiss);
+  if (count <= 0) return;
+  // 警告
+  showToast('⚠ 敌方基地发射导弹突袭我方防御设施，请做好准备！');
+  // 1.5秒后开始发射
+  setTimeout(() => {
+    let fired = 0;
+    const iv = setInterval(() => {
+      if (fired >= count || G.phase === 'lost' || G.phase === 'won') {
+        clearInterval(iv); return;
+      }
+      const alive = G.towers.filter(t => !t._removePending);
+      if (alive.length === 0) { clearInterval(iv); return; }
+      const target = alive[Math.floor(Math.random() * alive.length)];
+      // 只从还活着的基地发射
+      const aliveBasesNow = BASE_POSITIONS.filter(bp => (G.bases[bp.dir]?.hp||0) > 0);
+      if (aliveBasesNow.length === 0) { clearInterval(iv); return; }
+      const base = aliveBasesNow[fired % aliveBasesNow.length];
+      G.bombardMissiles.push({
+        x: base.x, y: base.y,
+        targetX: target.x, targetY: target.y,
+        targetTower: target, speed: 8, alive: true,
+        trail: [], dir: base.dir,
+      });
+      fired++;
+    }, 800);
+  }, 1500);
+}
+
+// ---- Core Damage ----
+function damageCore(amount){
+  G.coreHP-=amount||1;
+  if(G.coreHP<=0){
+    G.coreHP=0;
+    G.phase='lost';
+    sfxGameOver();
+    showOverlay('💀 失守！','核心已被摧毁。',restartGame);
+  }
+  updateHUD();
+  // Screen shake
+  // (subtle)
+}
+
+// ---- UI Functions ----
+function showToast(msg){
+  toastEl.textContent=msg;
+  toastEl.className='show';
+  clearTimeout(toastEl._t);
+  toastEl._t=setTimeout(()=>toastEl.className='',1500);
+}
+
+function showOverlay(title,desc,btnCb){
+  overlayEl.className='show';
+  olTitle.textContent=title;
+  olDesc.innerHTML=desc;
+  olBtn.onclick=btnCb;
+}
+
+function hideOverlay(){overlayEl.className='';}
+
+function restartGame(){
+  hideOverlay();
+  initGame();
+}
+
+function updateHUD(){
+  document.getElementById('hp-val').textContent=`${G.coreHP}/${G.maxCoreHP}`;
+  document.getElementById('gold-val').textContent=`$${G.gold}`;
+  document.getElementById('wave-val').textContent=`${G.wave}/50`;
+  document.getElementById('sp-val').textContent=`${G.sp}`;
+  // 飞弹进度条
+  const chargePct = Math.min(100, (G.missileCharge / G.missileCost) * 100);
+  const fill = document.getElementById('missile-fill');
+  fill.style.width = chargePct + '%';
+  fill.className = 'missile-bar-fill' + (G.missileReady > 0 ? ' ready' : '');
+  const num = document.getElementById('missile-num');
+  num.textContent = G.missileReady;
+  num.className = 'missile-num' + (G.missileReady === 0 && G.missileCharge === 0 ? ' empty' : '');
+  document.getElementById('militia-btn').disabled=G.sp<50||G.phase==='lost'||G.phase==='won';
+  document.getElementById('skill-btn').disabled=G.reconCD>0||G.phase==='lost'||G.phase==='won';
+  document.getElementById('wave-btn').disabled=G.waveInProgress||G.wave>=50||G.phase==='lost'||G.phase==='won';
+}
+
+function showTowerPanel(tower,x,y){
+  tpPanel.style.display='block';
+  tpPanel.style.left=Math.min(x,canvas.offsetWidth-140)+'px';
+  tpPanel.style.top=Math.min(y,canvas.offsetHeight-60)+'px';
+  const def=TOWER_TYPES[tower.type];
+  const lv=tower.level;
+  // Stat helpers
+  const dmgNow = tower.dmg;
+  const dmgNext = def.dmg[lv+1]!==undefined ? def.dmg[lv+1] : null;
+  const rangeNow = tower.range;
+  const rangeNext = def.range[lv+1]!==undefined ? def.range[lv+1] : null;
+  const cdNow = tower.cd;
+  const cdNext = def.cd[lv+1]!==undefined ? def.cd[lv+1] : null;
+  function statRow(label,now,next){
+    if(next!==null) return `<div class="tp-stat-row"><span class="tp-stat-label">${label}</span><span class="tp-stat-val">${now}</span><span class="tp-stat-arrow">→</span><span class="tp-stat-next">${next}</span></div>`;
+    return `<div class="tp-stat-row"><span class="tp-stat-label">${label}</span><span class="tp-stat-val" style="color:#f5c542">${now}</span><span class="tp-stat-arrow"></span></div>`;
+  }
+  let html=`<div class="tp-name">${def.name}</div><div class="tp-lv">Lv.${lv+1}${lv>=3?' ★MAX':''}</div>`;
+  html+= statRow('伤害',dmgNow,dmgNext);
+  if(tower.dmgAir!==tower.dmg) html+= statRow('对空',tower.dmgAir,def.dmgAir&&def.dmgAir[lv+1]!==undefined?def.dmgAir[lv+1]:null);
+  html+= statRow('范围',rangeNow,rangeNext);
+  html+= statRow('射速('+(cdNow/60).toFixed(1)+'s)',cdNow+'帧',cdNext!==null?cdNext+'帧':null);
+  if(tower.level<3){
+    const cost=tower.upgradeCosts[tower.level];
+    const canAfford=G.gold>=cost;
+    html+=`<div style="margin-top:4px"><button class="tp-btn upgrade" data-action="upgrade" ${canAfford?'':'disabled style="opacity:0.4;cursor:not-allowed"'}>⬆ 升级 $${cost}</button></div>`;
+    if(!canAfford) html+=`<div style="color:#e85555;font-size:10px;margin-top:2px">资金不足！</div>`;
+  }
+  const refund=Math.floor((tower.cost+tower.totalUpgradeCost)*tower.sellRatio);
+  html+=`<button class="tp-btn sell" data-action="sell">💰 出售 +$${refund}</button>`;
+  html+=`<button class="tp-btn" data-action="close">✕ 关闭</button>`;
+  tpPanel.innerHTML=html;
+  tpPanel.querySelectorAll('[data-action]').forEach(btn=>{
+    btn.onclick=(e)=>{
+      const act=btn.dataset.action;
+      if(act==='upgrade'){
+        if(btn.dataset.confirm){
+          btn.dataset.confirm='';
+          upgradeTower(tower);
+        }else{
+          btn.dataset.confirm='1';
+          btn.textContent='⚠ 确认升级？';
+          btn.style.borderColor='#e85555';
+          btn.style.color='#e85555';
+          setTimeout(()=>{
+            if(btn.dataset.confirm){
+              btn.dataset.confirm='';
+              const cost=tower.upgradeCosts[tower.level];
+              const canAfford=G.gold>=cost;
+              btn.textContent='⬆ 升级 $'+cost;
+              btn.style.borderColor=canAfford?'#5a4a1e':'#3a3a5e';
+              btn.style.color=canAfford?'#f5c542':'#665';
+            }
+          },3000);
+        }
+      }
+      else if(act==='sell'){
+        if(btn.dataset.confirm){
+          btn.dataset.confirm='';
+          sellTower(tower);
+        }else{
+          btn.dataset.confirm='1';
+          const oldText=btn.textContent;
+          btn.textContent='⚠ 确认出售？';
+          btn.style.borderColor='#e85555';
+          btn.style.color='#e85555';
+          setTimeout(()=>{
+            if(btn.dataset.confirm){
+              btn.dataset.confirm='';
+              btn.innerHTML=oldText;
+              btn.style.borderColor='#5a2a2a';
+              btn.style.color='#e88080';
+            }
+          },3000);
+        }
+      }
+      else if(act==='close'){G.selectedTower=null;hideTowerPanel();}
+    };
+  });
+  // 检查面板是否超出底部/右侧，自动翻转到合适位置
+  requestAnimationFrame(() => {
+    const pr = tpPanel.getBoundingClientRect();
+    const cr = canvas.getBoundingClientRect();
+    if (pr.bottom > cr.bottom) {
+      tpPanel.style.top = Math.max(0, y - pr.height - 10) + 'px';
+    }
+    if (pr.right > cr.right) {
+      tpPanel.style.left = Math.max(0, x - pr.width - 10) + 'px';
+    }
+  });
+}
+
+function hideTowerPanel(){tpPanel.style.display='none';}
+
+function upgradeTower(tower){
+  if(tower.level>=3)return;
+  const cost=tower.upgradeCosts[tower.level];
+  if(G.gold<cost){showToast('资金不足！');return;}
+  G.gold-=cost;
+  tower.totalUpgradeCost+=cost;
+  tower.level++;
+  _bgCanvas=null;
+  showToast(`⬆ ${tower.name} → Lv.${tower.level+1}`);
+  updateHUD();
+  showTowerPanel(tower,parseInt(tpPanel.style.left),parseInt(tpPanel.style.top));
+}
+
+function sellTower(tower){
+  const refund=Math.floor((tower.cost+tower.totalUpgradeCost)*tower.sellRatio);
+  G.gold+=refund;
+  tower.remove();
+  _bgCanvas=null;
+  hideTowerPanel();
+  showToast(`💰 出售成功 +$${refund}`);
+  updateHUD();
+}
+
+// ---- Map Drawing ----
+function drawMap(ctx){
+  // ════════════════════════════════════════════
+  //  中东地形地图 — 色块区分 + 地形地貌
+  // ════════════════════════════════════════════
+  // ── 1. Ocean base ──
+  ctx.fillStyle = '#0c1825';
+  ctx.fillRect(0,0,W,H);
+  const skyWash = ctx.createLinearGradient(0,0,0,H);
+  skyWash.addColorStop(0,'rgba(55,72,84,0.22)');
+  skyWash.addColorStop(0.45,'rgba(30,34,28,0.08)');
+  skyWash.addColorStop(1,'rgba(0,0,0,0.18)');
+  ctx.fillStyle = skyWash;
+  ctx.fillRect(0,0,W,H);
+
+  // ── 2. Country terrain fills (clean, no spots) ──
+  const fillData = [
+    // 1. Iran — extended north to cover entire top (removed Turkmenistan strip)
+    { fill:'#5a4631', pts:[{x:10,y:10},{x:1190,y:10},{x:1190,y:85},{x:1160,y:150},{x:1120,y:210},{x:1080,y:260},{x:1040,y:300},{x:1030,y:350},{x:1050,y:375},{x:1100,y:388},{x:1190,y:395},{x:1190,y:395},{x:1100,y:398},{x:1000,y:412},{x:900,y:418},{x:800,y:415},{x:700,y:408},{x:600,y:402},{x:500,y:400},{x:400,y:408},{x:300,y:420},{x:200,y:435},{x:100,y:430},{x:55,y:440},{x:40,y:425},{x:50,y:400},{x:80,y:370},{x:120,y:340},{x:150,y:290},{x:165,y:220},{x:180,y:150},{x:190,y:80},{x:10,y:10}]},
+    // 2. Turkey
+    { fill:'#324534', pts:[{x:10,y:10},{x:190,y:80},{x:180,y:150},{x:165,y:220},{x:160,y:250},{x:130,y:245},{x:100,y:250},{x:70,y:235},{x:45,y:210},{x:25,y:180},{x:15,y:140},{x:10,y:90},{x:10,y:10}]},
+    // 3. Syria
+    { fill:'#3d3020', pts:[{x:10,y:160},{x:50,y:170},{x:80,y:185},{x:100,y:205},{x:105,y:225},{x:95,y:230},{x:70,y:228},{x:45,y:215},{x:25,y:200},{x:10,y:185},{x:10,y:160}]},
+    // 4. Iraq
+    { fill:'#352a1c', pts:[{x:10,y:210},{x:40,y:215},{x:70,y:235},{x:100,y:250},{x:130,y:245},{x:160,y:250},{x:165,y:220},{x:150,y:290},{x:120,y:340},{x:80,y:370},{x:50,y:400},{x:40,y:425},{x:55,y:440},{x:40,y:435},{x:10,y:430},{x:10,y:210}]},
+    // 5. Israel
+    { fill:'#3d3226', pts:[{x:10,y:185},{x:25,y:200},{x:45,y:215},{x:55,y:230},{x:45,y:240},{x:30,y:245},{x:10,y:230},{x:10,y:185}]},
+    // 6. Jordan
+    { fill:'#31281c', pts:[{x:30,y:245},{x:45,y:240},{x:55,y:230},{x:70,y:228},{x:95,y:230},{x:105,y:225},{x:100,y:240},{x:90,y:260},{x:70,y:280},{x:45,y:285},{x:20,y:275},{x:10,y:260},{x:10,y:245},{x:30,y:245}]},
+    // 7. Kuwait — removed (too small, absorbed into Saudi Arabia)
+    // 8. Bahrain — removed
+    // 9. Qatar — removed
+    // 10. Saudi Arabia — cleaned up northern border, no eastward extension beyond Yemen
+    { fill:'#262012', pts:[{x:10,y:430},
+      // Northern arc toward Jordan
+      {x:40,y:400},{x:80,y:360},{x:120,y:320},{x:160,y:250},
+      // Down the Red Sea coast
+      {x:130,y:260},{x:100,y:280},{x:60,y:310},{x:30,y:330},{x:10,y:360},
+      // Down to Yemen border
+      {x:10,y:565},
+      // Yemen border (eastward)
+      {x:185,y:565},{x:205,y:566},{x:235,y:566},{x:275,y:566},{x:335,y:565},{x:375,y:564},{x:425,y:563},{x:475,y:563},{x:525,y:563},{x:575,y:563},{x:625,y:563},{x:675,y:563},{x:725,y:563},{x:775,y:563},{x:825,y:564},{x:925,y:565},
+      // Close directly back to Gulf coast (no eastward dip — area east of Yemen is sea)
+      {x:760,y:448},{x:600,y:452},{x:400,y:456},{x:200,y:448},{x:100,y:440},{x:10,y:430}]},
+    // 11. UAE
+    { fill:'#382e1e', pts:[{x:760,y:440},{x:830,y:428},{x:910,y:425},{x:970,y:432},{x:1010,y:445},{x:1020,y:465},{x:1000,y:480},{x:950,y:490},{x:880,y:492},{x:810,y:488},{x:760,y:478},{x:740,y:460},{x:760,y:440}]},
+    // 12. Oman
+    { fill:'#30261c', pts:[{x:1010,y:445},{x:1030,y:435},{x:1070,y:425},{x:1130,y:420},{x:1190,y:425},{x:1190,y:550},{x:1130,y:555},{x:1070,y:540},{x:1020,y:515},{x:995,y:490},{x:1000,y:480},{x:1010,y:465},{x:1010,y:445}]},
+    // 13. Yemen — well south at y:540, covers south route, completely separate from Gulf
+    { fill:'#241a12', pts:[
+      {x:185,y:565},{x:205,y:566},{x:235,y:566},{x:275,y:566},{x:335,y:565},{x:375,y:564},{x:425,y:563},{x:475,y:563},{x:525,y:563},{x:575,y:563},{x:625,y:563},{x:675,y:563},{x:725,y:563},{x:775,y:563},{x:825,y:564},{x:925,y:565},
+      {x:925,y:635},{x:915,y:660},{x:875,y:690},{x:815,y:715},{x:745,y:730},{x:665,y:733},{x:595,y:725},{x:525,y:713},{x:465,y:700},{x:405,y:683},{x:355,y:660},{x:315,y:635},{x:230,y:565},{x:185,y:565}]},
+    // 14. Afghanistan
+    { fill:'#2a2620', pts:[{x:980,y:35},{x:1120,y:38},{x:1250,y:32},{x:1390,y:10},{x:1390,y:85},{x:1360,y:150},{x:1320,y:210},{x:1280,y:260},{x:1240,y:275},{x:1180,y:255},{x:1100,y:210},{x:1040,y:165},{x:1000,y:110},{x:980,y:35}]},
+    // 15. Pakistan
+    { fill:'#242a22', pts:[{x:1040,y:275},{x:1080,y:260},{x:1120,y:210},{x:1160,y:150},{x:1190,y:85},{x:1190,y:395},{x:1100,y:388},{x:1050,y:375},{x:1030,y:350},{x:1040,y:300},{x:1040,y:275}]},
+  ];
+  for(const f of fillData){
+    ctx.fillStyle = f.fill;
+    ctx.beginPath(); ctx.moveTo(f.pts[0].x,f.pts[0].y);
+    for(let i=1;i<f.pts.length;i++) ctx.lineTo(f.pts[i].x,f.pts[i].y);
+    ctx.closePath(); ctx.fill();
+  }
+  // Subtle terrain grain and contour strokes: static, cached, and cheap.
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  for(let i=0;i<120;i++){
+    const x=(i*97)%W, y=(i*53+37)%H;
+    const r=0.8+((i*29)%13)/10;
+    ctx.fillStyle = i%3===0?'rgba(235,205,150,0.16)':i%3===1?'rgba(70,90,65,0.12)':'rgba(20,15,10,0.16)';
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle='rgba(245,214,160,0.055)';
+  ctx.lineWidth=1;
+  for(let y=105;y<670;y+=74){
+    ctx.beginPath();
+    for(let x=12;x<W;x+=18){
+      const yy=y+Math.sin(x*0.018+y*0.03)*7+Math.sin(x*0.047)*2;
+      if(x===12) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── 3. Moonlight gradient — more prominent
+  const ml = ctx.createRadialGradient(600,80,30,600,80,550);
+  ml.addColorStop(0,'rgba(230,210,190,0.10)'); ml.addColorStop(0.3,'rgba(200,185,170,0.05)'); ml.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle = ml; ctx.fillRect(0,0,W,H);
+
+  // ── 4. Water bodies ──
+  const gulfPts = [
+    {x:55,y:440},{x:100,y:430},{x:200,y:435},{x:300,y:420},{x:400,y:408},
+    {x:500,y:400},{x:600,y:402},{x:700,y:408},{x:800,y:415},{x:900,y:418},
+    {x:1000,y:412},{x:1100,y:398},{x:1190,y:395},
+    {x:1190,y:425},{x:1130,y:420},{x:1070,y:425},{x:1030,y:435},{x:1010,y:445},
+    {x:970,y:432},{x:910,y:425},{x:830,y:428},{x:760,y:440},{x:700,y:448},
+    {x:600,y:455},{x:500,y:465},{x:440,y:490},{x:438,y:510},{x:430,y:525},
+    {x:420,y:530},{x:410,y:535},{x:380,y:538},{x:330,y:535},{x:300,y:530},
+    {x:300,y:530},{x:250,y:510},{x:210,y:480},{x:160,y:470},{x:100,y:465},
+    {x:55,y:465},{x:40,y:450},{x:40,y:435},{x:55,y:440},
+  ];
+  // 波斯湾 — deeper richer blue
+  const waterGrad = ctx.createLinearGradient(120,395,1060,530);
+  waterGrad.addColorStop(0,'#0f2a47');
+  waterGrad.addColorStop(0.45,'#17406a');
+  waterGrad.addColorStop(1,'#0b1d34');
+  ctx.fillStyle = waterGrad;
+  ctx.beginPath(); ctx.moveTo(gulfPts[0].x,gulfPts[0].y);
+  for(let i=1;i<gulfPts.length;i++) ctx.lineTo(gulfPts[i].x,gulfPts[i].y);
+  ctx.closePath(); ctx.fill();
+  // Deep center gradient — richer
+  const gg = ctx.createRadialGradient(560,450,80,560,450,280);
+  gg.addColorStop(0,'rgba(15,40,85,0.6)'); gg.addColorStop(0.5,'rgba(12,32,70,0.4)'); gg.addColorStop(1,'rgba(10,25,50,0)');
+  ctx.beginPath(); ctx.moveTo(gulfPts[0].x,gulfPts[0].y);
+  for(let i=1;i<gulfPts.length;i++) ctx.lineTo(gulfPts[i].x,gulfPts[i].y);
+  ctx.closePath(); ctx.fill();
+  // Coastal edge — brighter
+  ctx.fillStyle = 'rgba(20,50,90,0.4)'; ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(gulfPts[0].x,gulfPts[0].y);
+  for(let i=1;i<gulfPts.length;i++) ctx.lineTo(gulfPts[i].x,gulfPts[i].y);
+  ctx.closePath(); ctx.stroke();
+
+  // Red Sea
+  ctx.fillStyle = '#102a4c';
+  ctx.beginPath(); ctx.moveTo(10,430); ctx.lineTo(10,360); ctx.lineTo(15,340);
+  ctx.lineTo(30,320); ctx.lineTo(60,305); ctx.lineTo(100,280);
+  ctx.lineTo(85,300); ctx.lineTo(60,320); ctx.lineTo(35,350);
+  ctx.lineTo(15,380); ctx.lineTo(10,430); ctx.closePath(); ctx.fill();
+
+  // Caspian Sea
+  ctx.fillStyle = '#14304f';
+  ctx.beginPath(); ctx.moveTo(400,15); ctx.lineTo(450,55); ctx.lineTo(600,60);
+  ctx.lineTo(660,55); ctx.lineTo(700,40); ctx.lineTo(640,20);
+  ctx.lineTo(520,12); ctx.lineTo(400,15); ctx.closePath(); ctx.fill();
+
+  // Water shimmer — brighter
+  ctx.strokeStyle = 'rgba(50,130,220,0.08)'; ctx.lineWidth = 1;
+  for(let i=0;i<3;i++){
+    const yB = 435 + i*35 + 5*Math.sin(G.frame*0.005+i*1.3);
+    ctx.beginPath();
+    for(let x=200+i*40; x<950-i*80; x+=5) ctx.lineTo(x, yB + 2*Math.sin(x*0.025+G.frame*0.008+i));
+    ctx.stroke();
+  }
+
+  // Gulf islands
+  ctx.fillStyle = '#242116';
+  const islandDefs = [
+    {x:280,y:450,r:5},{x:310,y:470,r:2},{x:450,y:450,r:3},{x:540,y:430,r:4},
+    {x:680,y:424,r:6},{x:690,y:438,r:2},{x:860,y:440,r:3},{x:940,y:440,r:2},
+  ];
+  for(const il of islandDefs){ ctx.beginPath();ctx.arc(il.x,il.y,il.r,0,Math.PI*2);ctx.fill(); }
+
+  // ── 5. Country borders removed — color contrast between countries provides separation ──
+
+  // ── 6. Rivers ──
+  ctx.strokeStyle = 'rgba(25,60,90,0.2)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(100,240); ctx.lineTo(95,260); ctx.lineTo(80,290);
+  ctx.lineTo(70,320); ctx.lineTo(65,350); ctx.lineTo(65,380); ctx.lineTo(75,420); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(140,250); ctx.lineTo(125,280); ctx.lineTo(105,310);
+  ctx.lineTo(90,340); ctx.lineTo(80,370); ctx.lineTo(75,400); ctx.lineTo(70,420); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(1080,200); ctx.lineTo(1070,230); ctx.lineTo(1060,260);
+  ctx.lineTo(1050,290); ctx.lineTo(1040,320); ctx.lineTo(1050,350); ctx.stroke();
+
+  // ── 7. Country labels ──
+  ctx.font = 'bold 12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle = 'rgba(200,185,160,0.5)';
+  const clabels = [
+    ['伊朗',600,200],['土耳其',95,120],['叙利亚',25,175],['伊拉克',90,320],
+    ['以色列',18,195],['约旦',55,260],['沙特阿拉伯',340,525],
+    ['阿联酋',870,450],['阿曼',1100,490],['也门',270,572],['阿富汗',1150,150],
+    ['巴基斯坦',1065,230],
+  ];
+  for(const [n,x,y] of clabels) ctx.fillText(n,x,y);
+
+  // ── 8. Mountains ──
+  ctx.strokeStyle = 'rgba(110,80,60,0.1)'; ctx.lineWidth = 1;
+  for(let m=0;m<6;m++){
+    const bx=150+m*130, by=248+m*5;
+    ctx.beginPath();
+    ctx.moveTo(bx-35,by+22); ctx.lineTo(bx-17,by-4); ctx.lineTo(bx,by+10);
+    ctx.lineTo(bx+17,by-6); ctx.lineTo(bx+38,by+16); ctx.lineTo(bx+60,by-2);
+    ctx.lineTo(bx+80,by+22); ctx.stroke();
+  }
+  for(let m=0;m<3;m++){
+    const bx=30+m*55, by=360+m*30;
+    ctx.beginPath(); ctx.moveTo(bx-16,by+14); ctx.lineTo(bx-6,by-3);
+    ctx.lineTo(bx+4,by+6); ctx.lineTo(bx+12,by-4); ctx.lineTo(bx+24,by+12); ctx.stroke();
+  }
+  for(let m=0;m<2;m++){
+    const bx=870+m*120, by=80+m*18;
+    ctx.beginPath(); ctx.moveTo(bx-22,by+16); ctx.lineTo(bx-10,by-3);
+    ctx.lineTo(bx,by+8); ctx.lineTo(bx+10,by-4); ctx.lineTo(bx+24,by+14); ctx.stroke();
+  }
+
+  // ── 9. Cities ──
+  const cities = [
+    {x:600,y:360,pop:5,c:'#ff6644',n:'★ 波斯 (核心)'},
+    {x:135,y:115,pop:2,c:'#ddaa66',n:'安卡拉'},{x:75,y:195,pop:2,c:'#ddaa66',n:'大马士革'},
+    {x:40,y:218,pop:2,c:'#ddaa66',n:'耶路撒冷'},{x:80,y:425,pop:2,c:'#ddaa66',n:'巴士拉'},
+    // Kuwait City removed (in Gulf),
+    {x:690,y:170,pop:2,c:'#ddaa66',n:'伊斯法罕'},
+    {x:385,y:552,pop:3,c:'#ddaa66',n:'利雅得'},{x:900,y:440,pop:2,c:'#ddaa66',n:'阿布扎比'},
+    {x:1050,y:530,pop:2,c:'#ddaa66',n:'马斯喀特'},{x:980,y:380,pop:1,c:'#ddaa66',n:'阿巴斯港'},
+    {x:350,y:595,pop:2,c:'#ddaa66',n:'萨那'},{x:250,y:640,pop:1,c:'#ddaa66',n:'亚丁'},
+    // Doha removed (in Gulf),// Manama removed (in Gulf),
+    {x:1060,y:220,pop:1,c:'#ddaa66',n:'坎大哈'},{x:1115,y:295,pop:2,c:'#ddaa66',n:'卡拉奇'},
+    {x:990,y:100,pop:1,c:'#ddaa66',n:'赫拉特'},{x:450,y:190,pop:3,c:'#ddaa66',n:'巴格达'},
+  ];
+  for(const city of cities){
+    ctx.fillStyle = `rgba(255,200,100,${0.06+0.04*Math.sin(G.frame*0.03+city.x)})`;
+    ctx.beginPath(); ctx.arc(city.x,city.y,city.pop*4.5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = city.c; ctx.beginPath(); ctx.arc(city.x,city.y,city.pop*1.2,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(200,180,150,0.5)';
+    ctx.font = '9px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(city.n,city.x,city.y-city.pop*1.5-7);
+  }
+
+  // ── 10. Water labels ──
+  ctx.font = 'bold 16px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle = `rgba(50,130,220,${0.2+0.06*Math.sin(G.frame*0.02)})`;
+  ctx.fillText('波斯湾', 580, 450);
+  ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = 'rgba(50,100,180,0.18)';
+  ctx.fillText('里海', 550, 35);
+  ctx.font = '9px sans-serif'; ctx.fillStyle = 'rgba(50,130,220,0.2)';
+  ctx.fillText('霍尔木兹海峡', 1030, 440); ctx.fillText('阿曼湾', 1120, 435); ctx.fillText('红海', 25, 380);
+
+  // ── 11. Compass ──
+  ctx.fillStyle = 'rgba(200,180,150,0.3)';
+  ctx.font = 'bold 12px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText('↑ N', 15, 15);
+
+  // ════════════════════════════════════════════
+  //  兵线（Routes）
+  // ════════════════════════════════════════════
+  ctx.textBaseline='alphabetic';
+  for(const route of ROUTES){
+    ctx.strokeStyle='rgba(0,0,0,0.28)'; ctx.lineWidth=32; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(route.waypoints[0].x,route.waypoints[0].y);
+    for(let i=1;i<route.waypoints.length;i++) ctx.lineTo(route.waypoints[i].x,route.waypoints[i].y);
+    ctx.stroke();
+    ctx.strokeStyle=route.color+'18'; ctx.lineWidth=25; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(route.waypoints[0].x,route.waypoints[0].y);
+    for(let i=1;i<route.waypoints.length;i++) ctx.lineTo(route.waypoints[i].x,route.waypoints[i].y);
+    ctx.stroke();
+    ctx.strokeStyle=route.color+'52'; ctx.lineWidth=6;
+    ctx.beginPath(); ctx.moveTo(route.waypoints[0].x,route.waypoints[0].y);
+    for(let i=1;i<route.waypoints.length;i++) ctx.lineTo(route.waypoints[i].x,route.waypoints[i].y);
+    ctx.stroke();
+    ctx.strokeStyle='rgba(235,245,255,0.10)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(route.waypoints[0].x,route.waypoints[0].y);
+    for(let i=1;i<route.waypoints.length;i++) ctx.lineTo(route.waypoints[i].x,route.waypoints[i].y);
+    ctx.stroke();
+    for(const wp of route.waypoints){
+      ctx.fillStyle=route.color+'50'; ctx.beginPath();ctx.arc(wp.x,wp.y,3,0,Math.PI*2);ctx.fill();
+    }
+    const first=route.waypoints.length>1?route.waypoints[1]:route.waypoints[0];
+    ctx.fillStyle=route.color+'99'; ctx.font='bold 12px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(route.id==='West'?'西路':'南路',first.x,first.y-18);
+  }
+
+  // ════════════════════════════════════════════
+  //  Tower slots — MOVED to main draw() for dynamic updates
+  // ════════════════════════════════════════════
+
+  // ════════════════════════════════════════════
+  //  Core (德黑兰 — 画面正中)
+  // ════════════════════════════════════════════
+  const cg=0.22+0.08*Math.sin(G.frame*0.04);
+  ctx.fillStyle=`rgba(220,64,58,${cg})`; ctx.shadowColor='rgba(240,70,60,0.32)'; ctx.shadowBlur=24;
+  ctx.beginPath();ctx.arc(CORE_X,CORE_Y,27,0,Math.PI*2);ctx.fill(); ctx.shadowBlur=0;
+  const coreGrad=ctx.createRadialGradient(CORE_X-8,CORE_Y-9,4,CORE_X,CORE_Y,25);
+  coreGrad.addColorStop(0,'#ff9980'); coreGrad.addColorStop(0.45,'#d64a3f'); coreGrad.addColorStop(1,'#7f1e22');
+  ctx.fillStyle=coreGrad; ctx.beginPath();ctx.arc(CORE_X,CORE_Y,22,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(255,220,180,0.45)'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='rgba(255,235,190,0.9)'; ctx.font='bold 12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('波斯',CORE_X,CORE_Y);
+  ctx.textBaseline='alphabetic';
+  
+  // Stars (upper area)
+  for(let i=0;i<12;i++){
+    const sx=(i*157+43)%W, sy=(i*89+25)%120;
+    const tw=0.3+0.7*(0.5+0.5*Math.sin(G.frame*0.015+i*2.7));
+    ctx.fillStyle=`rgba(200,190,230,${0.12*tw})`; ctx.beginPath();ctx.arc(sx,sy,1+tw*0.4,0,Math.PI*2);ctx.fill();
+  }
+  
+  // ════════════════════════════════════════════
+  //  美军基地 — MOVED to main draw() for dynamic updates
+  // ════════════════════════════════════════════
+}
+
+// ════════════════════════════════════════════
+//  Audio System — Web Audio API 程序化音效 & BGM
+// ════════════════════════════════════════════
+let audioCtx = null;
+const SFX = {
+  sfxEnabled: true,
+  volume: 0.8,
+  bgmNode: null,
+  bgmGain: null,
+  bgmPlaying: false,
+};
+function initAudio(){
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+function ensureAudio(){
+  if(!audioCtx) initAudio();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+}
+// ── Procedural SFX ──
+function sfxClick(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'sine'; o.frequency.value = 900;
+  g.gain.setValueAtTime(0.25 * SFX.volume, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+  o.connect(g).connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime + 0.06);
+}
+function sfxBuild(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(200, audioCtx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(500, audioCtx.currentTime + 0.12);
+  g.gain.setValueAtTime(0.35 * SFX.volume, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+  o.connect(g).connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime + 0.15);
+}
+function sfxShoot(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  const bufSize = audioCtx.sampleRate * 0.06;
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<bufSize;i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/bufSize, 2);
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.22 * SFX.volume, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+  src.connect(g).connect(audioCtx.destination);
+  src.start();
+}
+function sfxExplode(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  const bufSize = audioCtx.sampleRate * 0.3;
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<bufSize;i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/bufSize, 0.5);
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.25 * SFX.volume, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+  // Low rumble
+  const o = audioCtx.createOscillator();
+  const og = audioCtx.createGain();
+  o.type = 'sawtooth'; o.frequency.value = 60;
+  og.gain.setValueAtTime(0.25 * SFX.volume, audioCtx.currentTime);
+  og.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+  src.connect(g).connect(audioCtx.destination);
+  o.connect(og).connect(audioCtx.destination);
+  src.start();
+  o.start(); o.stop(audioCtx.currentTime + 0.25);
+}
+function sfxWaveStart(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  [0,0.15].forEach((delay,i)=>{
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'square'; o.frequency.value = i===0 ? 440 : 660;
+    g.gain.setValueAtTime(0.15 * SFX.volume, audioCtx.currentTime + delay);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.2);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(audioCtx.currentTime + delay);
+    o.stop(audioCtx.currentTime + delay + 0.2);
+  });
+}
+function sfxGameOver(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  [800,600,400,200].forEach((freq,i)=>{
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sawtooth'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.18 * SFX.volume, audioCtx.currentTime + i*0.18);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i*0.18 + 0.3);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(audioCtx.currentTime + i*0.18);
+    o.stop(audioCtx.currentTime + i*0.18 + 0.3);
+  });
+}
+function sfxVictory(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  [400,500,600,800,1000,1200,1500].forEach((freq,i)=>{
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.22 * SFX.volume, audioCtx.currentTime + i*0.1);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i*0.1 + 0.35);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(audioCtx.currentTime + i*0.1);
+    o.stop(audioCtx.currentTime + i*0.1 + 0.35);
+  });
+}
+function sfxCoin(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(1200, audioCtx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(2400, audioCtx.currentTime + 0.1);
+  g.gain.setValueAtTime(0.2 * SFX.volume, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+  o.connect(g).connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime + 0.15);
+}
+// ════════════════════════════════════════════
+//  New SFX: 炸塔、导弹爆炸、无人机杀敌、民兵杀敌
+// ════════════════════════════════════════════
+function sfxTowerDestroy(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  // Crashing metallic boom
+  const bufSize = audioCtx.sampleRate * 0.5;
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<bufSize;i++){
+    const t = i/bufSize;
+    const noise = (Math.random()*2-1) * Math.pow(1-t, 0.6);
+    const metal = Math.sin(i*0.05) * Math.pow(1-t, 0.8) * 0.4;
+    d[i] = (noise + metal) * 0.5;
+  }
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.55 * SFX.volume, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+  src.connect(g).connect(audioCtx.destination);
+  src.start();
+  // Deep low rumble
+  const o = audioCtx.createOscillator();
+  const og = audioCtx.createGain();
+  o.type = 'sawtooth'; o.frequency.setValueAtTime(80, audioCtx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.4);
+  og.gain.setValueAtTime(0.3 * SFX.volume, audioCtx.currentTime);
+  og.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+  o.connect(og).connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime + 0.4);
+}
+function sfxMissileHit(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  // Big bassy boom
+  const bufSize = audioCtx.sampleRate * 0.45;
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<bufSize;i++){
+    const t = i/bufSize;
+    d[i] = (Math.random()*2-1) * Math.pow(1-t, 0.7);
+  }
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.5 * SFX.volume, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
+  src.connect(g).connect(audioCtx.destination);
+  src.start();
+  // Sub-bass thump
+  const o = audioCtx.createOscillator();
+  const og = audioCtx.createGain();
+  o.type = 'sine'; o.frequency.value = 55;
+  og.gain.setValueAtTime(0.25 * SFX.volume, audioCtx.currentTime);
+  og.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+  o.connect(og).connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime + 0.3);
+  // Cymbal crash
+  const buf2 = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.25, audioCtx.sampleRate);
+  const d2 = buf2.getChannelData(0);
+  for(let i=0;i<buf2.length;i++) d2[i] = (Math.random()*2-1) * Math.pow(1-i/buf2.length, 4);
+  const src2 = audioCtx.createBufferSource();
+  src2.buffer = buf2;
+  const g2 = audioCtx.createGain();
+  g2.gain.setValueAtTime(0.15 * SFX.volume, audioCtx.currentTime);
+  g2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+  src2.connect(g2).connect(audioCtx.destination);
+  src2.start(audioCtx.currentTime + 0.05);
+}
+function sfxDroneKill(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  // High-pitched electric zap
+  const o1 = audioCtx.createOscillator();
+  const g1 = audioCtx.createGain();
+  o1.type = 'square';
+  o1.frequency.setValueAtTime(1800, audioCtx.currentTime);
+  o1.frequency.exponentialRampToValueAtTime(4000, audioCtx.currentTime + 0.08);
+  g1.gain.setValueAtTime(0.22 * SFX.volume, audioCtx.currentTime);
+  g1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+  o1.connect(g1).connect(audioCtx.destination);
+  o1.start(); o1.stop(audioCtx.currentTime + 0.1);
+  // Sizzle
+  const bufSize = audioCtx.sampleRate * 0.06;
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<bufSize;i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/bufSize, 2);
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.15 * SFX.volume, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+  src.connect(g).connect(audioCtx.destination);
+  src.start();
+}
+function sfxMilitiaKill(){
+  if(!SFX.sfxEnabled) return;
+  ensureAudio();
+  // Crunchy explosion — noise burst + thud
+  const bufSize = audioCtx.sampleRate * 0.2;
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<bufSize;i++){
+    const t = i/bufSize;
+    d[i] = (Math.random()*2-1) * Math.pow(1-t, 0.8) + Math.sin(i*0.1) * Math.pow(1-t, 0.5) * 0.3;
+  }
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.4 * SFX.volume, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+  src.connect(g).connect(audioCtx.destination);
+  src.start();
+  // Low thud
+  const o = audioCtx.createOscillator();
+  const og = audioCtx.createGain();
+  o.type = 'triangle'; o.frequency.value = 90;
+  og.gain.setValueAtTime(0.35 * SFX.volume, audioCtx.currentTime);
+  og.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+  o.connect(og).connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime + 0.12);
+}
+// ════════════════════════════════════════════
+//  Background Music — 纯旋律军乐（无鼓点）
+//  Tempo: 120 BPM, ~2分30秒循环
+// ════════════════════════════════════════════
+function sfxPlayBGM(){
+  if(!SFX.sfxEnabled || !audioCtx) return;
+  if(SFX.bgmPlaying) return;
+  SFX.bgmPlaying = true;
+  const masterGain = audioCtx.createGain();
+  masterGain.gain.value = SFX.volume * 0.30;
+  masterGain.connect(audioCtx.destination);
+  SFX.bgmGain = masterGain;
+
+  const BPM = 120, beatSec = 60 / BPM;
+
+  // ── 低音：和声进行 ──
+  const bassNotes = [65.41, 98.0, 87.31, 65.41]; // C2, G2, F2, C2
+  let bassIdx = 0;
+  const bass = audioCtx.createOscillator();
+  const bg = audioCtx.createGain();
+  bass.type = 'sine';
+  bass.frequency.value = bassNotes[0];
+  bg.gain.setValueAtTime(0, audioCtx.currentTime);
+  bg.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 1);
+  bass.connect(bg).connect(masterGain);
+  bass.start();
+  setInterval(() => {
+    if(!SFX.bgmPlaying) return;
+    bassIdx = (bassIdx + 1) % bassNotes.length;
+    bass.frequency.setTargetAtTime(bassNotes[bassIdx], audioCtx.currentTime, 0.1);
+  }, beatSec * 10000);
+
+  // ── 旋律段落 ──
+  // [freq, beatOffset, duration(beats), velocity]
+
+  // 主题A — 英雄主题
+  const themeA = [
+    [261.6, 0, 0.25, 0.10], [329.6, 0.25, 0.25, 0.11],
+    [392.0, 0.5, 0.5, 0.12], [440.0, 1.0, 0.25, 0.11],
+    [392.0, 1.25, 0.25, 0.10], [329.6, 1.5, 0.5, 0.10],
+    [293.7, 2.0, 0.25, 0.10], [329.6, 2.25, 0.25, 0.11],
+    [392.0, 2.5, 0.5, 0.12], [440.0, 3.0, 0.5, 0.12],
+    [392.0, 3.5, 0.5, 0.10],
+    [261.6, 4.0, 0.25, 0.10], [349.2, 4.25, 0.25, 0.11],
+    [392.0, 4.5, 0.25, 0.12], [466.2, 4.75, 0.25, 0.12],
+    [523.3, 5.0, 0.5, 0.13], [466.2, 5.5, 0.25, 0.11],
+    [392.0, 5.75, 0.25, 0.10],
+    [349.2, 6.0, 0.5, 0.11], [329.6, 6.5, 0.25, 0.10],
+    [293.7, 6.75, 0.25, 0.10],
+    [261.6, 7.0, 0.5, 0.12], [329.6, 7.5, 0.5, 0.12],
+  ];
+
+  // 主题A' — 高音变奏
+  const themeAPrime = [
+    [329.6, 0, 0.25, 0.10], [392.0, 0.25, 0.25, 0.11],
+    [440.0, 0.5, 0.25, 0.12], [466.2, 0.75, 0.25, 0.12],
+    [523.3, 1.0, 0.5, 0.13], [440.0, 1.5, 0.5, 0.11],
+    [392.0, 2.0, 0.25, 0.11], [440.0, 2.25, 0.25, 0.12],
+    [466.2, 2.5, 0.25, 0.12], [392.0, 2.75, 0.25, 0.11],
+    [349.2, 3.0, 0.5, 0.10], [329.6, 3.5, 0.5, 0.10],
+    [392.0, 4.0, 0.25, 0.11], [440.0, 4.25, 0.25, 0.12],
+    [466.2, 4.5, 0.25, 0.12], [523.3, 4.75, 0.25, 0.13],
+    [554.4, 5.0, 0.5, 0.14], [523.3, 5.5, 0.25, 0.12],
+    [466.2, 5.75, 0.25, 0.11],
+    [440.0, 6.0, 0.25, 0.11], [466.2, 6.25, 0.25, 0.12],
+    [523.3, 6.5, 0.5, 0.13],
+    [392.0, 7.0, 0.5, 0.12], [466.2, 7.5, 0.5, 0.12],
+  ];
+
+  // 主题B — 副歌
+  const themeB = [
+    [392.0, 0, 0.75, 0.13], [440.0, 0.75, 0.25, 0.12],
+    [466.2, 1.0, 0.5, 0.13], [523.3, 1.5, 0.5, 0.14],
+    [466.2, 2.0, 0.5, 0.13], [440.0, 2.5, 0.5, 0.12],
+    [392.0, 3.0, 0.5, 0.12], [440.0, 3.5, 0.5, 0.12],
+    [466.2, 4.0, 0.5, 0.13], [523.3, 4.5, 0.5, 0.14],
+    [587.3, 5.0, 0.5, 0.15], [523.3, 5.5, 0.5, 0.14],
+    [466.2, 6.0, 0.5, 0.13], [392.0, 6.5, 0.5, 0.12],
+    [261.6, 7.0, 0.25, 0.10], [329.6, 7.25, 0.25, 0.10],
+    [392.0, 7.5, 0.5, 0.12],
+  ];
+
+  // 主题C — 过渡
+  const themeC = [
+    [261.6, 0, 0.5, 0.09], [293.7, 0.5, 0.5, 0.09],
+    [311.1, 1.0, 0.5, 0.10], [349.2, 1.5, 0.5, 0.10],
+    [329.6, 2.0, 0.5, 0.10], [311.1, 2.5, 0.5, 0.09],
+    [293.7, 3.0, 0.5, 0.09], [261.6, 3.5, 0.5, 0.09],
+    [329.6, 4.0, 0.5, 0.10], [349.2, 4.5, 0.5, 0.10],
+    [392.0, 5.0, 0.5, 0.11], [311.1, 5.5, 0.5, 0.10],
+    [293.7, 6.0, 0.5, 0.09], [261.6, 6.5, 0.5, 0.09],
+    [329.6, 7.0, 0.75, 0.12], [293.7, 7.75, 0.25, 0.10],
+  ];
+
+  // 主题D — 轻柔中段
+  const themeD = [
+    [261.6, 0, 0.5, 0.08], [220.0, 0.5, 0.5, 0.08],
+    [261.6, 1.0, 0.5, 0.09], [293.7, 1.5, 0.5, 0.09],
+    [329.6, 2.0, 0.5, 0.10], [293.7, 2.5, 0.5, 0.09],
+    [261.6, 3.0, 0.5, 0.09], [220.0, 3.5, 0.5, 0.08],
+    [261.6, 4.0, 0.75, 0.10], [293.7, 4.75, 0.25, 0.10],
+    [329.6, 5.0, 0.5, 0.11], [349.2, 5.5, 0.5, 0.10],
+    [329.6, 6.0, 0.75, 0.11], [293.7, 6.75, 0.25, 0.09],
+    [261.6, 7.0, 1.0, 0.10],
+  ];
+
+  // 主题E — 渐强推向高潮
+  const themeE = [
+    [392.0, 0, 0.5, 0.11], [440.0, 0.5, 0.5, 0.12],
+    [466.2, 1.0, 0.5, 0.12], [523.3, 1.5, 0.5, 0.13],
+    [392.0, 2.0, 0.5, 0.11], [440.0, 2.5, 0.5, 0.12],
+    [466.2, 3.0, 0.5, 0.12], [523.3, 3.5, 0.5, 0.13],
+    [523.3, 4.0, 0.5, 0.13], [554.4, 4.5, 0.5, 0.14],
+    [587.3, 5.0, 0.5, 0.15], [659.3, 5.5, 1.0, 0.16],
+    [523.3, 6.5, 0.5, 0.14], [392.0, 7.0, 1.0, 0.12],
+  ];
+
+  // 尾奏
+  const coda = [
+    [261.6, 0, 0.5, 0.08], [329.6, 0.5, 0.5, 0.09],
+    [392.0, 1.0, 0.5, 0.10], [329.6, 1.5, 0.5, 0.09],
+    [261.6, 2.0, 0.5, 0.08], [329.6, 2.5, 0.5, 0.09],
+    [392.0, 3.0, 0.5, 0.10], [261.6, 3.5, 0.5, 0.08],
+    [392.0, 4.0, 0.75, 0.10], [466.2, 4.75, 0.25, 0.11],
+    [523.3, 5.0, 0.5, 0.12], [587.3, 5.5, 0.5, 0.13],
+    [659.3, 6.0, 1.0, 0.15],
+    [261.6, 7.0, 1.0, 0.10],
+  ];
+
+  // ── 段落编排 ──
+  // 每个 [pattern, repeatCount] 每段 repeat*8 拍，段间2拍空白
+  const sections = [
+    ['Intro', [], 4],          // 32拍
+    ['A', themeA, 5],          // 80拍
+    ["A'", themeAPrime, 4],    // 64拍
+    ['B', themeB, 5],          // 80拍
+    ['C', themeC, 4],          // 64拍
+    ['D', themeD, 5],          // 80拍
+    ['A', themeA, 4],          // 64拍 主题回归
+    ['B', themeB, 4],          // 64拍 副歌再现
+    ['E', themeE, 4],          // 64拍 渐强
+    ['Coda', coda, 3],         // 48拍
+  ];
+
+  function playPattern(pattern, repeatCount){
+    for(let rep = 0; rep < repeatCount; rep++){
+      const repOff = rep * 8;
+      for(const [freq, beat, dur, vel] of pattern){
+        const startT = audioCtx.currentTime + (repOff + beat) * beatSec;
+        const durT = dur * beatSec;
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = 'triangle';
+        o.frequency.value = freq;
+        const velAdj = vel * (0.9 + Math.random() * 0.2);
+        g.gain.setValueAtTime(0, startT);
+        g.gain.linearRampToValueAtTime(velAdj, startT + 0.02);
+        g.gain.setValueAtTime(velAdj, startT + durT * 0.6);
+        g.gain.exponentialRampToValueAtTime(0.001, startT + durT);
+        o.connect(g).connect(masterGain);
+        o.start(startT);
+        o.stop(startT + durT + 0.01);
+      }
+    }
+  }
+
+  // 调度所有段落
+  let scheduleOffset = 0;
+  for(const [name, pattern, repeat] of sections){
+    const gap = scheduleOffset;
+    if(pattern.length > 0){
+      setTimeout(() => {
+        if(SFX.bgmPlaying) playPattern(pattern, repeat);
+      }, gap * beatSec * 1000);
+    }
+    scheduleOffset += repeat * 8;
+    if(name !== sections[sections.length-1][0]){
+      scheduleOffset += 2;
+    }
+  }
+
+  const totalBeats = scheduleOffset + 8;
+  const totalMs = totalBeats * beatSec * 1000;
+
+  // 淡出重启循环
+  const loopId = setTimeout(() => {
+    if(!SFX.bgmPlaying) return;
+    try{
+      SFX.bgmNode.masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+      setTimeout(() => {
+        try{
+          SFX.bgmNode.masterGain.disconnect();
+          SFX.bgmNode.bass.stop();
+          SFX.bgmPlaying = false;
+          setTimeout(() => { if(SFX.sfxEnabled) sfxPlayBGM(); }, 100);
+        }catch(e){}
+      }, 600);
+    }catch(e){}
+  }, totalMs + 500);
+
+  SFX.bgmNode = { masterGain, bass, bg, loopId, totalMs };
+}
+function sfxStopBGM(){
+  SFX.bgmPlaying = false;
+  if(SFX.bgmNode){
+    try{
+      SFX.bgmNode.masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+      setTimeout(() => {
+        try{
+          SFX.bgmNode.masterGain.disconnect();
+          if(SFX.bgmNode.bass) SFX.bgmNode.bass.stop();
+        }catch(e){}
+      }, 500);
+    }catch(e){}
+    SFX.bgmNode = null;
+  }
+}
+function sfxToggle(toggleId, key){
+  const el = document.getElementById(toggleId);
+  if(!el) return;
+  el.addEventListener('click', ()=>{
+    SFX[key] = !SFX[key];
+    el.classList.toggle('on', SFX[key]);
+    if(key === 'sfxEnabled'){
+      if(SFX[key]) sfxPlayBGM();
+      else sfxStopBGM();
+    }
+  });
+}
+function sfxVolume(elId, numId){
+  const el = document.getElementById(elId);
+  const num = document.getElementById(numId);
+  if(!el || !num) return;
+  el.addEventListener('input', ()=>{
+    const v = parseFloat(el.value) / 100;
+    SFX.volume = v;
+    num.textContent = Math.round(v * 100) + '%';
+    if(SFX.bgmNode && SFX.bgmNode.masterGain){
+      SFX.bgmNode.masterGain.gain.value = v * 0.35;
+    }
+  });
+}
+
+// ════════════════════════════════════════════
+//  Settings Panel
+// ════════════════════════════════════════════
+let settingsPanel = null, settingsOverlay = null;
+function openSettings(){
+  ensureAudio();
+  if(!settingsPanel) settingsPanel = document.getElementById('settings-panel');
+  settingsPanel.classList.add('show');
+  // Dim overlay behind
+  if(!settingsOverlay){
+    settingsOverlay = document.createElement('div');
+    settingsOverlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:35';
+    settingsOverlay.addEventListener('click', closeSettings);
+    settingsPanel.parentNode.insertBefore(settingsOverlay, settingsPanel);
+  }
+  settingsOverlay.style.display = 'block';
+}
+function closeSettings(){
+  if(settingsPanel) settingsPanel.classList.remove('show');
+  if(settingsOverlay) settingsOverlay.style.display = 'none';
+}
+
+// ── Save/Load ──
+const SAVE_KEY = 'persian_guard_save';
+function saveGame(){
+  try{
+    const data = {
+      gold: G.gold,
+      coreHP: G.coreHP, maxCoreHP: G.maxCoreHP,
+      wave: G.wave,
+      sp: G.sp,
+      phase: G.phase,
+      missileCharge: G.missileCharge,
+      missileReady: G.missileReady,
+      goldEarned: G.goldEarned,
+      kills: G.kills,
+      towers: G.towers.map(t=>({slotIdx:t.slotIdx, type:t.type, level:t.level, totalUpgradeCost:t.totalUpgradeCost})),
+      bases: JSON.parse(JSON.stringify(G.bases)),
+      waveInProgress: G.waveInProgress,
+      allSpawned: G.allSpawned,
+      spawnQueue: [],  // 不保存进行中波次的生成队列，加载后重新开始波次
+      spawnIndex: 0,
+      spawnTimer: 0,
+      version: 1,
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    showToast('💾 游戏已保存');
+    sfxCoin();
+  }catch(e){
+    showToast('⚠ 保存失败: '+e.message);
+  }
+}
+function loadGame(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw){ showToast('⚠ 没有存档'); return; }
+    const data = JSON.parse(raw);
+    if(!data.version){ showToast('⚠ 存档版本不兼容'); return; }
+    // 停止BGM
+    sfxStopBGM();
+    // 清空所有活动对象
+    G.enemies = [];
+    G.projs = [];
+    G.particles = [];
+    G.reconDrones = [];
+    G.bombardMissiles = [];
+    G.tehranMissiles = [];
+    G.towers = [];
+    G.selectedTower = null;
+    G.pendingType = -1;
+    G._confirmExit = false;
+    // 恢复基本状态
+    G.gold = data.gold;
+    G.coreHP = data.coreHP;
+    G.maxCoreHP = data.maxCoreHP;
+    G.wave = data.wave;
+    G.sp = data.sp;
+    G.phase = data.phase;
+    G.missileCharge = data.missileCharge || 0;
+    G.missileReady = data.missileReady || 0;
+    G.goldEarned = data.goldEarned || 0;
+    G.kills = data.kills || 0;
+    G.waveInProgress = false;
+    G.allSpawned = false;
+    G.spawnQueue = [];
+    G.spawnIndex = 0;
+    G.spawnTimer = 0;
+    G.bases = data.bases;
+    // 重建阵位和炮塔
+    initSlots();
+    for(const td of data.towers){
+      if(td.slotIdx !== undefined && td.slotIdx < G.slots.length && !G.slots[td.slotIdx].occupied){
+        G.slots[td.slotIdx].occupied = true;
+        const twr = new Tower(td.slotIdx, td.type);
+        twr.level = td.level || 0;
+        twr.totalUpgradeCost = td.totalUpgradeCost || 0;
+        G.towers.push(twr);
+      }
+    }
+    // 更新UI
+    hideTowerPanel();
+    hideOverlay();
+    updateHUD();
+    const wb = document.getElementById('wave-btn');
+    if(data.phase === 'lost' || data.phase === 'won'){
+      wb.disabled = true;
+      if(data.phase === 'won'){
+        showOverlay('🎉 胜利！','已加载胜利存档<br>击杀: '+data.kills+' | 总收益: $'+data.goldEarned,()=>{hideOverlay();});
+      }else{
+        showOverlay('💀 失守！','已加载失败存档',()=>{hideOverlay();});
+      }
+    }else{
+      wb.disabled = data.waveInProgress || data.wave >= 50;
+    }
+    showToast('📂 存档已读取');
+    sfxCoin();
+  }catch(e){
+    showToast('⚠ 读取失败: '+e.message);
+  }
+}
+
+function setupSettings(){
+  const sBtn = document.getElementById('settings-btn');
+  const stClose = document.getElementById('st-close');
+  const stRestart = document.getElementById('st-restart');
+  const stSave = document.getElementById('st-save');
+  const stLoad = document.getElementById('st-load');
+
+  sBtn.addEventListener('click', openSettings);
+  stClose.addEventListener('click', closeSettings);
+  stRestart.addEventListener('click', ()=>{
+    closeSettings();
+    restartGame();
+  });
+  stSave.addEventListener('click', saveGame);
+  stLoad.addEventListener('click', ()=>{
+    loadGame();
+    closeSettings();
+  });
+
+  // SFX toggle
+  sfxToggle('st-sfx', 'sfxEnabled');
+  // Volume
+  sfxVolume('st-volume', 'st-vol-num');
+}
+
+// ---- Input Handling ----
+function setupInput(){
+  canvas.addEventListener('click',(e)=>{
+    const rect=canvas.getBoundingClientRect();
+    const sx=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const sy=(e.clientY-rect.top)*(canvas.height/rect.height);
+    handleClick(sx,sy);
+  });
+  canvas.addEventListener('mousemove',(e)=>{
+    const rect=canvas.getBoundingClientRect();
+    G.cursorX=(e.clientX-rect.left)*(canvas.width/rect.width);
+    G.cursorY=(e.clientY-rect.top)*(canvas.height/rect.height);
+  });
+  canvas.addEventListener('mouseleave',()=>{G.cursorX=-999;G.cursorY=-999;});
+  canvas.addEventListener('contextmenu',(e)=>{
+    e.preventDefault();
+    // 放置模式下右键 = 取消放置
+    if(G.pendingType>=0){
+      G.pendingType=-1;
+      document.querySelectorAll('.tower-btn').forEach(b=>b.classList.remove('selected'));
+      return;
+    }
+    const rect=canvas.getBoundingClientRect();
+    const sx=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const sy=(e.clientY-rect.top)*(canvas.height/rect.height);
+    // Sell on right-click
+    for(const t of G.towers){
+      if(dist({x:sx,y:sy},t)<22){
+        // 右键双击同一炮塔 → 出售
+        const now=Date.now();
+        if(G._lastRightClickTower===t && now-G._lastRightClickTime<350){
+          G._lastRightClickTower=null;
+          G._lastRightClickTime=0;
+          sellTower(t);
+        }else{
+          G._lastRightClickTower=t;
+          G._lastRightClickTime=now;
+          showToast(`右键双击出售 ${t.name}`);
+        }
+        return;
+      }
+    }
+    G.pendingType=-1;
+    document.querySelectorAll('.tower-btn').forEach(b=>b.classList.remove('selected'));
+  });
+  // Tower buttons
+  document.querySelectorAll('.tower-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const idx=parseInt(btn.dataset.tower);
+      if(G.pendingType===idx){
+        G.pendingType=-1;
+        btn.classList.remove('selected');
+        return;
+      }
+      if(G.phase==='lost'||G.phase==='won')return;
+      const def=TOWER_TYPES[idx];
+      if(G.gold<def.cost){showToast('资金不足！');return;}
+      G.pendingType=idx;
+      document.querySelectorAll('.tower-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      hideTowerPanel();
+    });
+  });
+  // Wave button
+  document.getElementById('wave-btn').addEventListener('click',startWave);
+  // Militia
+  document.getElementById('militia-btn').addEventListener('click',summonMilitia);
+  // Recon skill
+  document.getElementById('skill-btn').addEventListener('click',useRecon);
+  // 购买飞弹：点击导弹栏，$1000买1发
+  document.querySelector('.missile-bar-wrap').addEventListener('click',()=>{
+    if(G.gold>=1000 && G.phase!=='lost' && G.phase!=='won'){
+      G.gold-=1000; G.missileReady++;
+      updateHUD();
+      showToast('💵 购买飞弹 +1');
+    }
+  });
+  // Keyboard
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='1')document.querySelector('[data-tower="0"]').click();
+    else if(e.key==='2')document.querySelector('[data-tower="1"]').click();
+    else if(e.key==='3')document.querySelector('[data-tower="2"]').click();
+    else if(e.key==='4')document.querySelector('[data-tower="3"]').click();
+    else if(e.key===' '||e.key==='Enter'){e.preventDefault();if(!document.getElementById('wave-btn').disabled)startWave();}
+    else if(e.key==='Escape'){
+      // 设置面板打开 → 关闭
+      if(settingsPanel && settingsPanel.classList.contains('show')){
+        closeSettings();
+        return;
+      }
+      // 有选中炮塔/放置模式 → 取消
+      if(G.selectedTower||G.pendingType>=0){
+        G.pendingType=-1;G.selectedTower=null;
+        document.querySelectorAll('.tower-btn').forEach(b=>b.classList.remove('selected'));
+        hideTowerPanel();
+        return;
+      }
+      // 游戏中 → 确认退出
+      if(G.wave>0 && G.phase!=='won' && G.phase!=='lost'){
+        if(G._confirmExit){
+          restartGame();
+          G._confirmExit=false;
+        }else{
+          G._confirmExit=true;
+          showOverlay('确认退出？','当前游戏进度将丢失，是否重新开始？',()=>{
+            G._confirmExit=false;
+            restartGame();
+          });
+          // 在覆盖层上加个继续按钮
+          const contBtn=document.createElement('button');
+          contBtn.textContent='继续游戏';
+          contBtn.style.marginLeft='12px';
+          contBtn.style.borderColor='#2a6a3e';
+          contBtn.style.background='#1e4a2e';
+          contBtn.style.border='1px solid #3a8a4e';
+          contBtn.onclick=()=>{G._confirmExit=false;hideOverlay();};
+          olBtn.parentNode.insertBefore(contBtn,olBtn.nextSibling);
+        }
+        return;
+      }
+    }
+    else if(e.key==='r'||e.key==='R')useRecon();
+    else if(e.key==='m'||e.key==='M')summonMilitia();
+  });
+  // 页面关闭/刷新时确认
+  window.addEventListener('beforeunload',(e)=>{
+    if(G.wave>0 && G.phase!=='won' && G.phase!=='lost'){
+      e.preventDefault();
+      e.returnValue='';
+    }
+  });
+  // 鼠标前进/后退按钮 → 确认离开
+  window.addEventListener('popstate',(e)=>{
+    if(G.wave>0 && G.phase!=='won' && G.phase!=='lost'){
+      // 先推回历史状态，防止页面离开
+      history.pushState(null, '');
+      // 弹出确认
+      showOverlay('确认离开？','游戏进行中，离开将丢失当前进度。',()=>{
+        // 用户确认，关闭游戏
+        G._confirmExit=false;
+        hideOverlay();
+        // 让页面自然导航离开
+        window.location.href='about:blank';
+      });
+      // 继续游戏按钮
+      const contBtn=document.createElement('button');
+      contBtn.textContent='继续游戏';
+      contBtn.style.marginLeft='12px';
+      contBtn.style.borderColor='#2a6a3e';
+      contBtn.style.background='#1a3a2a';
+      contBtn.onclick=()=>{G._confirmExit=false;hideOverlay();};
+      olBtn.parentNode.insertBefore(contBtn,olBtn.nextSibling);
+    }
+  });
+  // 开局时推一个历史状态，让鼠标后退也能被拦截
+  document.getElementById('wave-btn').addEventListener('click',()=>{
+    if(G.wave===0) history.pushState(null, '');
+  });
+}
+
+function handleClick(sx,sy){
+  // Check enemy base click (德黑兰反击飞弹 — 攻击基地)
+  for(const bp of BASE_POSITIONS){
+    if(dist({x:sx,y:sy},bp) < 30 && (G.bases[bp.dir]?.hp||0) > 0){
+      const canFire = G.missileReady > 0 || G.gold >= 1000;
+      if(canFire){
+        if(G.missileReady <= 0){ G.gold -= 1000; showToast('💵 花费$1000购买飞弹'); }
+        fireTehranMissile(bp);
+        return;
+      }
+    }
+  }
+  // Check tower click (select)
+  for(const t of G.towers){
+    if(dist({x:sx,y:sy},t)<20){
+      // 双击同一炮塔 → 升级
+      const now=Date.now();
+      if(G._lastClickTower===t && now-G._lastClickTime<350){
+        G._lastClickTower=null;
+        G._lastClickTime=0;
+        if(t.level<3){
+          const cost=t.upgradeCosts[t.level];
+          if(G.gold>=cost){
+            G.gold-=cost;
+            t.totalUpgradeCost+=cost;
+            t.level++;
+            showToast(`⬆ ${t.name} → Lv.${t.level+1}`);
+            updateHUD();
+          }else{
+            showToast('资金不足！');
+          }
+        }else{
+          showToast(`${t.name} 已达最高等级`);
+        }
+        return;
+      }
+      G._lastClickTower=t;
+      G._lastClickTime=now;
+      G.selectedTower=t;
+      showTowerPanel(t,sx+10,sy-30);
+      G.pendingType=-1;
+      document.querySelectorAll('.tower-btn').forEach(b=>b.classList.remove('selected'));
+      return;
+    }
+  }
+  // Check slot click (build)
+  if(G.pendingType>=0){
+    let nearest=null,nearDist=30;
+    for(let i=0;i<G.slots.length;i++){
+      const s=G.slots[i];
+      if(s.occupied)continue;
+      const d=dist({x:sx,y:sy},s);
+      if(d<nearDist){nearDist=d;nearest=i;}
+    }
+    if(nearest!==null){
+      const built=buildTower(nearest,G.pendingType);
+      if(!built){
+        G.pendingType=-1;
+        document.querySelectorAll('.tower-btn').forEach(b=>b.classList.remove('selected'));
+      }
+    } else {
+      G.pendingType=-1;
+      document.querySelectorAll('.tower-btn').forEach(b=>b.classList.remove('selected'));
+    }
+    return;
+  }
+  // 战术飞弹打击：点击空白处 → 有飞弹免费打，没飞弹扣$1000买
+  const canFire = G.missileReady > 0 || G.gold >= 1000;
+  if(canFire && G.phase !== 'lost' && G.phase !== 'won'){
+    if(G.missileReady <= 0){ G.gold -= 1000; showToast('💵 花费$1000购买飞弹'); }
+    fireTacticalMissile(sx, sy);
+    return;
+  }
+  // Deselect
+  G.selectedTower=null;
+  hideTowerPanel();
+}
+
+function buildTower(slotIdx,type){
+  const def=TOWER_TYPES[type];
+  if(G.gold<def.cost){showToast('资金不足！');return false;}
+  if(G.slots[slotIdx].occupied){showToast('该位置已被占用');return false;}
+  G.slots[slotIdx].occupied=true;
+  G.gold-=def.cost;
+  const tower=new Tower(slotIdx,type);
+  G.towers.push(tower);
+  _bgCanvas=null;
+  showToast(`✅ ${def.name} 已建造`);
+  sfxBuild();
+  updateHUD();
+  return true;
+}
+
+// 德黑兰反击飞弹
+function fireTehranMissile(base){
+  G.missileReady--;
+  const m = {
+    x: CORE_X, y: CORE_Y,
+    targetX: base.x, targetY: base.y,
+    targetDir: base.dir,
+    speed: 7,
+    alive: true,
+    trail: [],
+  };
+  G.tehranMissiles.push(m);
+  showToast(`🚀 反击！飞弹飞向${base.dir}方基地`);
+  updateHUD();
+}
+
+// 战术飞弹打击：向指定位置发射飞弹，造成范围伤害
+function fireTacticalMissile(tx, ty){
+  G.missileReady--;
+  const m = {
+    x: CORE_X, y: CORE_Y,
+    targetX: tx, targetY: ty,
+    speed: 7,
+    alive: true,
+    trail: [],
+    tactical: true,  // 标记为战术打击
+    aoeRadius: 80,   // 爆炸范围
+    aoeDamage: 150,  // 范围伤害（提升至150，圆心重创大飞机过半）
+  };
+  G.tehranMissiles.push(m);
+  showToast(`🚀 战术飞弹发射！目标(${Math.round(tx)},${Math.round(ty)})`);
+  updateHUD();
+}
+
+// ---- Game Loop ----
+let _bgCanvas = null; // offscreen canvas for static map
+
+function update(dt){
+  G.frame++;
+  // CD timers
+  if(G.reconCD>0){G.reconCD-=dt*60;if(G.reconCD<0)G.reconCD=0;}
+  // Global jammer slow aura (single pass — was O(jammers×enemies), now O(enemies+jammers))
+  for(const e of G.enemies){
+    if(!e.alive||e.friendly)continue;
+    let bestSlow=0,bestJammer=null;
+    for(const t of G.towers){
+      if(t._removePending||t.type!==2||t.slow<=0)continue;
+      if(distSq(t,e)<=t.range*t.range){
+        if(t.slow>bestSlow){bestSlow=t.slow;bestJammer=t;}
+      }
+    }
+    if(bestJammer){
+      e.slowTimer=15;
+      e.slowAmount=Math.max(e.slowAmount||0,bestSlow);
+      if(e.stealth&&!e.revealed)e.revealed=true;
+    }
+  }
+  // Update towers
+  for(const t of G.towers){
+    if(t._removePending) continue;
+    t.update(dt);
+  }
+  // Cleanup removed towers
+  compactAlive(G.towers,t=>!t._removePending);
+  if(G.selectedTower && G.selectedTower._removePending){
+    G.selectedTower = null;
+    hideTowerPanel();
+  }
+  // Update enemies
+  for(const e of G.enemies){
+    e.update(dt);
+    if(e.reachedEnd){
+      e.alive=false;
+      if(!e.friendly)damageCore(e.suicide?2:1);
+    }
+  }
+  // Friendly unit collision: militia rams GROUND enemies (self-destruct / one-hit-kill) — frame-skipped 2/3
+  if(G.frame%3===0){
+    for(const e of G.enemies){
+      if(!e.alive||!e.friendly)continue;
+      for(const t of G.enemies){
+        if(!t.alive||t.friendly||t===e)continue;
+        if(t.flying) continue;
+        const hit=e.size+t.size+5;
+        if(distSq(e,t)<hit*hit){
+          killEnemy(t);
+          e.alive=false;
+          sfxMilitiaKill();
+          emitBurst(e.x,e.y,6,'#ff8833',3,8,0.5,40,160);
+          break;
+        }
+      }
+    }
+  }
+  // Update projectiles
+  for(const p of G.projs)p.update(dt);
+  // Update recon drones
+  for(const rd of G.reconDrones)rd.update(dt);
+  // Update bombard missiles
+  for(const m of G.bombardMissiles){
+    if(!m.alive)continue;
+    const dx=m.targetX-m.x, dy=m.targetY-m.y;
+    const arrive=m.speed+5;
+    const dSq=dx*dx+dy*dy;
+    if(dSq<arrive*arrive){
+      m.alive=false;
+      const tower=m.targetTower;
+      if(tower&&!tower._removePending){
+        emitBurst(tower.x,tower.y,8,'#ff4422',4,10,0.8,50,200);
+        tower.remove();
+        _bgCanvas=null;
+        sfxTowerDestroy();
+        showToast(`💥 炮塔被导弹摧毁！`);
+      }
+    }else{
+      if(G.frame%2===0)m.trail.push({x:m.x,y:m.y,life:.3});
+      if(m.trail.length>5)m.trail.shift();
+      const d=Math.sqrt(dSq);
+      m.x+=(dx/d)*m.speed;
+      m.y+=(dy/d)*m.speed;
+    }
+  }
+  // Update Tehran missiles (反击飞弹)
+  for(const m of G.tehranMissiles){
+    if(!m.alive)continue;
+    const dx=m.targetX-m.x, dy=m.targetY-m.y;
+    const arrive=m.speed+5;
+    const dSq=dx*dx+dy*dy;
+    if(dSq<arrive*arrive){
+      m.alive=false;
+      if(m.tactical){
+        // 战术打击：范围爆炸伤害
+        let hitCount = 0;
+        const aoeSq=m.aoeRadius*m.aoeRadius;
+        for(const e of G.enemies){
+          if(!e.alive) continue;
+          const ex=e.x-m.targetX, ey=e.y-m.targetY;
+          const edSq=ex*ex+ey*ey;
+          if(edSq <= aoeSq){
+            const ed=Math.sqrt(edSq);
+            const dmgMult = 1 - (ed / m.aoeRadius) * 0.5; // 中心100%，边缘50%
+            const dmg = Math.round(m.aoeDamage * dmgMult * (1 - (e.armor||0)));
+            e.hp -= dmg;
+            e.hitFlash = 8;
+            if(e.hp <= 0) killEnemy(e);
+            hitCount++;
+          }
+        }
+        // 爆炸粒子
+        sfxMissileHit();
+        emitBurst(m.targetX,m.targetY,12,'#ffcc44',6,14,0.8,80,300);
+        emitBurst(m.targetX,m.targetY,8,'#ff8844',4,10,0.6,40,200);
+        // 冲击波环
+        emitParticle(m.targetX,m.targetY,0,0,0.5,'#ffcc44',1,{shockwave:true,waveRadius:m.aoeRadius});
+        showToast(`💥 战术飞弹命中！击中${hitCount}个敌人`);
+      }else{
+        // 基地打击
+        const dir=m.targetDir;
+        G.bases[dir].hp--;
+        G.bases[dir].wavesSinceHit = 0;
+        // Explosion
+        sfxMissileHit();
+        const col=G.bases[dir].hp<=0?'#888':'#ffaa44';
+        emitBurst(m.targetX,m.targetY,10,col,5,14,0.9,60,250);
+        if(G.bases[dir].hp<=0){
+          showToast(`💥 ${dir}方基地被彻底摧毁！`);
+        }else{
+          showToast(`💥 ${dir}方基地受损 (${G.bases[dir].hp}/${G.bases[dir].maxHp})`);
+        }
+      }
+    }else{
+      if(G.frame%2===0)m.trail.push({x:m.x,y:m.y,life:.4});
+      if(m.trail.length>6)m.trail.shift();
+      const d=Math.sqrt(dSq);
+      m.x+=(dx/d)*m.speed;
+      m.y+=(dy/d)*m.speed;
+    }
+  }
+  // Update particles
+  for(const p of G.particles){
+    p.x+=p.vx*dt;
+    p.y+=p.vy*dt;
+    p.vy+=60*dt;
+    p.life-=dt;
+  }
+  // Cleanup
+  compactAlive(G.enemies,e=>e.alive);
+  compactAlive(G.projs,p=>p.alive);
+  compactAlive(G.reconDrones,rd=>rd.alive);
+  compactAlive(G.bombardMissiles,m=>m.alive);
+  compactAlive(G.tehranMissiles,m=>m.alive);
+  compactAlive(G.particles,p=>p.life>0);
+  // Hard cap particles at 200 — prevents slowdown from explosion spam
+  if(G.particles.length>200)G.particles.splice(0,G.particles.length-200);
+  // Wave
+  updateWave(dt);
+  // HUD update rate
+  if(G.frame%5===0)updateHUD();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  // Map — use offscreen canvas, only redraw when towers change (static background)
+  if(!_bgCanvas){
+    _bgCanvas=document.createElement('canvas');
+    _bgCanvas.width=W;_bgCanvas.height=H;
+    const bgCtx=_bgCanvas.getContext('2d');
+    drawMap(bgCtx);
+  }
+  ctx.drawImage(_bgCanvas,0,0);
+  // Tower slots — dynamic, not cached
+  const isPlacing = G.pendingType >= 0;
+  for(const slot of G.slots){
+    const occ=slot.occupied;
+    if(occ){
+      ctx.fillStyle='rgba(60,60,140,0.04)';
+      ctx.strokeStyle='rgba(80,80,180,0.05)';
+      ctx.lineWidth=1;
+      ctx.beginPath();ctx.roundRect(slot.x-12,slot.y-12,24,24,4);ctx.fill();ctx.stroke();
+    }else if(isPlacing){
+      // Building mode: highlight empty slots
+      const pulse = 0.5 + 0.15 * Math.sin(G.frame * 0.04 + slot.x * 0.01);
+      ctx.strokeStyle=`rgba(245,197,66,${0.5+0.3*Math.sin(G.frame*0.06)})`;
+      ctx.lineWidth=2;
+      ctx.fillStyle=`rgba(245,197,66,${0.15*pulse})`;
+      ctx.beginPath();ctx.roundRect(slot.x-12,slot.y-12,24,24,4);ctx.fill();ctx.stroke();
+    }
+    // Default: don't draw empty slots at all — clean map
+  }
+  // 美军基地 — dynamic, not cached (HP changes in real-time)
+  const baseColors = {
+    '西': { fill:'#3a6ea5', light:'#5a9ed5', dark:'#1a3e65', label:'西·海军' },
+    '东': { fill:'#c0392b', light:'#e0695b', dark:'#7a1a12', label:'东·陆军' },
+    '北': { fill:'#2d8a46', light:'#4aba6a', dark:'#1a4a26', label:'北·空军' },
+    '南': { fill:'#b88a0b', light:'#e8ba3b', dark:'#6a4a05', label:'南·指挥部' },
+  };
+  for(const bp of BASE_POSITIONS){
+    const baseData = G.bases[bp.dir] || {hp:0, maxHp:4};
+    const col = baseColors[bp.dir];
+    const destroyed = baseData.hp <= 0;
+    const pulse = destroyed ? 0 : (0.85 + 0.15 * Math.sin(G.frame * 0.025 + bp.x));
+    const dCol = destroyed
+      ? { fill:'#555', light:'#777', dark:'#333', label:col.label.replace(/(·.*)/,'·废墟') }
+      : col;
+    ctx.save();
+    ctx.translate(bp.x, bp.y);
+    const toCenter = Math.atan2(360 - bp.y, 600 - bp.x);
+    ctx.rotate(toCenter);
+    if(!destroyed){
+      ctx.shadowColor = dCol.light;
+      ctx.shadowBlur = 18 * pulse;
+    }
+    ctx.fillStyle = dCol.dark;
+    ctx.strokeStyle = dCol.light;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(-14, -10, 28, 20);
+    ctx.fill(); ctx.stroke();
+    if(destroyed){
+      ctx.strokeStyle = '#666';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(-12,-8); ctx.lineTo(12,8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-12,8); ctx.lineTo(12,-8); ctx.stroke();
+    }else{
+      ctx.fillStyle = dCol.fill;
+      ctx.beginPath();
+      ctx.rect(-6, -6, 12, 14);
+      ctx.fill();
+      ctx.fillStyle = dCol.light;
+      ctx.shadowBlur = 10;
+      ctx.fillRect(4, -2.5, 16, 5);
+      ctx.fillRect(-8, -2.5, 6, 5);
+      ctx.fillStyle = dCol.light;
+      ctx.beginPath(); ctx.arc(0, -3, 5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#fff6';
+      ctx.beginPath(); ctx.arc(0, -5, 2, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur = 0;
+      const hpR = baseData.hp / baseData.maxHp;
+      const barW = 24, barH = 3;
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(-barW/2-1, 11, barW+2, barH+2);
+      ctx.fillStyle = hpR > 0.66 ? '#44cc44' : hpR > 0.33 ? '#ddcc44' : '#ee4444';
+      if (hpR > 0.01) ctx.fillRect(-barW/2, 12, barW * hpR, barH);
+    }
+    ctx.shadowBlur = 0;
+    ctx.restore();
+    ctx.fillStyle = destroyed ? '#777' : dCol.light;
+    ctx.font = `bold ${destroyed?'9':'10'}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    const labelY = bp.dir === '北' ? bp.y + 24 : bp.y - 24;
+    ctx.fillText(dCol.label, bp.x, labelY);
+    ctx.fillStyle = destroyed ? '#666' : col.fill;
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    const flagY = bp.dir === '北' ? bp.y + 26 : bp.y - 26;
+    ctx.fillText(destroyed ? '✕' : '⚑', bp.x, flagY);
+  }
+  // Enemies
+  for(const e of G.enemies)e.draw(ctx);
+  // Recon drones
+  for(const rd of G.reconDrones)rd.draw(ctx);
+  // Bombard missiles
+  for(const m of G.bombardMissiles){
+    if(!m.alive)continue;
+    if(m.trail.length>1){
+      ctx.save();
+      ctx.lineCap='round'; ctx.lineJoin='round';
+      ctx.shadowColor='#ff4a2a'; ctx.shadowBlur=8;
+      ctx.strokeStyle='rgba(255,74,42,0.20)';
+      ctx.lineWidth=3.4;
+      ctx.beginPath(); ctx.moveTo(m.trail[0].x,m.trail[0].y);
+      for(let i=1;i<m.trail.length;i++)ctx.lineTo(m.trail[i].x,m.trail[i].y);
+      ctx.lineTo(m.x,m.y); ctx.stroke();
+      ctx.strokeStyle='rgba(255,220,160,0.24)';
+      ctx.lineWidth=1;
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.shadowColor='#ff4422';ctx.shadowBlur=9;
+    ctx.fillStyle='#ff5a34';
+    ctx.beginPath();ctx.arc(m.x,m.y,5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,245,210,0.9)';
+    ctx.beginPath();ctx.arc(m.x-1,m.y-1,2,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
+  }
+  // Tehran missiles (反击飞弹 — 金色尾焰)
+  for(const m of G.tehranMissiles){
+    if(!m.alive)continue;
+    if(m.trail.length>1){
+      ctx.save();
+      ctx.lineCap='round'; ctx.lineJoin='round';
+      ctx.shadowColor=m.tactical?'#ffcc44':'#86d7ff';
+      ctx.shadowBlur=9;
+      ctx.strokeStyle=m.tactical?'rgba(255,202,68,0.22)':'rgba(110,210,255,0.18)';
+      ctx.lineWidth=m.tactical?3.6:3;
+      ctx.beginPath(); ctx.moveTo(m.trail[0].x,m.trail[0].y);
+      for(let i=1;i<m.trail.length;i++)ctx.lineTo(m.trail[i].x,m.trail[i].y);
+      ctx.lineTo(m.x,m.y); ctx.stroke();
+      ctx.strokeStyle='rgba(255,255,230,0.25)';
+      ctx.lineWidth=1;
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.shadowColor=m.tactical?'#ffcc44':'#86d7ff';ctx.shadowBlur=10;
+    ctx.fillStyle=m.tactical?'#ffcc44':'#8bdcff';
+    ctx.beginPath();ctx.arc(m.x,m.y,m.tactical?6:5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,235,0.9)';
+    ctx.beginPath();ctx.arc(m.x-1,m.y-1,2,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
+  }
+  // Towers
+  for(const t of G.towers)t.draw(ctx);
+  // Projectiles
+  for(const p of G.projs)p.draw(ctx);
+  // Particles — batch by brightness for performance
+  ctx.shadowBlur=0;
+  for(const p of G.particles){
+    if(p.shockwave){
+      const t = 1 - p.life / 0.5;
+      const r = p.waveRadius * t;
+      ctx.strokeStyle = `rgba(255,200,68,${0.6*(1-t)})`;
+      ctx.lineWidth = 3 - t * 2.5;
+      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2); ctx.stroke();
+      continue;
+    }
+    const alpha=Math.max(0,p.life/(p.life+dt||0.5));
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*Math.max(0.1,alpha),0,Math.PI*2);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  // Pending build indicator
+  if(G.pendingType>=0){
+    ctx.fillStyle='rgba(245,197,66,0.6)';
+    ctx.font='14px sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('点击塔位建造',W/2,30);
+  }
+  // 飞弹就绪提示
+  if(G.missileReady > 0 && G.phase !== 'lost' && G.phase !== 'won'){
+    ctx.fillStyle=`rgba(255,100,50,${0.3+0.3*Math.sin(G.frame*0.05)})`;
+    ctx.font='bold 16px sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('🚀 点击地面发射战术飞弹 | 点击基地发射反击飞弹', W/2, H-40);
+    // AoE 范围预览圈
+    if(G.cursorX > 0 && G.cursorY > 0){
+      const pulse = 0.4 + 0.15 * Math.sin(G.frame * 0.06);
+      ctx.strokeStyle = `rgba(255,200,68,${pulse})`;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath(); ctx.arc(G.cursorX, G.cursorY, 80, 0, Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+      // 内圈渐变提示
+      const grd = ctx.createRadialGradient(G.cursorX, G.cursorY, 0, G.cursorX, G.cursorY, 80);
+      grd.addColorStop(0, 'rgba(255,200,68,0.10)');
+      grd.addColorStop(0.5, 'rgba(255,200,68,0.05)');
+      grd.addColorStop(1, 'rgba(255,200,68,0)');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(G.cursorX, G.cursorY, 80, 0, Math.PI*2); ctx.fill();
+      // 中心十字准星
+      ctx.strokeStyle = `rgba(255,200,68,${pulse*0.8})`;
+      ctx.lineWidth = 1;
+      const cs = 6;
+      ctx.beginPath();
+      ctx.moveTo(G.cursorX-cs, G.cursorY); ctx.lineTo(G.cursorX+cs, G.cursorY);
+      ctx.moveTo(G.cursorX, G.cursorY-cs); ctx.lineTo(G.cursorX, G.cursorY+cs);
+      ctx.stroke();
+      // 提示提升
+      ctx.fillStyle = `rgba(255,200,68,${0.5+0.2*Math.sin(G.frame*0.05)})`;
+      ctx.font='11px sans-serif';
+      ctx.fillText(`伤害 150 | 范围 80px`, G.cursorX, G.cursorY - 90);
+    }
+  }
+  // Wave button text update
+  const waveBtn = document.getElementById('wave-btn');
+  if(G.waveInProgress){
+    waveBtn.textContent = `⏳ ${G.wave}/50`;
+  } else if(G.wave >= 50){
+    waveBtn.textContent = '🏁 完成';
+  } else if(G.wave === 0){
+    waveBtn.textContent = '▶ 开始';
+  } else {
+    waveBtn.textContent = `▶ 第${G.wave+1}波`;
+  }
+  // Cooldown indicators on skill button
+  const skillBtn=document.getElementById('skill-btn');
+  if(G.reconCD>0){
+    const sec=Math.ceil(G.reconCD/60);
+    skillBtn.innerHTML=`侦察<br>${sec}s`;
+  }else{
+    skillBtn.innerHTML='侦察<br>无人机';
+  }
+}
+
+let dt=0,lastTime=0;
+function gameLoop(timestamp){
+  dt=Math.min(0.05,(timestamp-lastTime)/1000);
+  lastTime=timestamp;
+  update(dt);
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+// ---- Init ----
+function initGame(){
+  G.gold=500;
+  G.coreHP=15;
+  G.maxCoreHP=15;
+  G.wave=0;
+  G.sp=0;
+  G.phase='idle';
+  G.towers=[];
+  G.enemies=[];
+  G.projs=[];
+  G.particles=[];
+  G.texts=[];
+  G.selectedTower=null;
+  G.pendingType=-1;
+  G.spawnQueue=[];
+  G.spawnIndex=0;
+  G.spawnTimer=0;
+  G.waveInProgress=false;
+  G.allSpawned=false;
+  G.reconCD=0;
+  G.reconDrones=[];
+  G.bombardMissiles=[];
+  G.frame=0;
+  G.goldEarned=0;
+  G.kills=0;
+  G.missileCharge=0;
+  G.missileReady=0;
+  G.tehranMissiles=[];
+  G.bases={
+    西:{hp:4, maxHp:4, wavesSinceHit:0},
+    东:{hp:4, maxHp:4, wavesSinceHit:0},
+    北:{hp:4, maxHp:4, wavesSinceHit:0},
+    南:{hp:4, maxHp:4, wavesSinceHit:0},
+  };
+  _bgCanvas=null;
+  lastTime=0;
+  initSlots();
+  hideTowerPanel();
+  hideOverlay();
+  updateHUD();
+  document.getElementById('wave-btn').disabled=true;
+  showToast('🏗️ 建造防御塔，抵御入侵！');
+  // Auto-enable wave after a short delay
+  setTimeout(()=>{
+    if(G.phase==='idle')document.getElementById('wave-btn').disabled=false;
+  },1000);
+}
+
+function init(){
+  canvas=document.getElementById('gc');
+  ctx=canvas.getContext('2d');
+  canvas.width=W;
+  canvas.height=H;
+  tpPanel=document.getElementById('tower-panel');
+  toastEl=document.getElementById('toast');
+  overlayEl=document.getElementById('overlay');
+  olTitle=document.getElementById('ol-title');
+  olDesc=document.getElementById('ol-desc');
+  olBtn=document.getElementById('ol-btn');
+  // 初始化音效
+  initAudio();
+  // 初始化设置面板
+  setupSettings();
+  // Polyfill roundRect
+  if(!CanvasRenderingContext2D.prototype.roundRect){
+    CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+      if(r>w/2)r=w/2;if(r>h/2)r=h/2;
+      this.moveTo(x+r,y);
+      this.lineTo(x+w-r,y);
+      this.quadraticCurveTo(x+w,y,x+w,y+r);
+      this.lineTo(x+w,y+h-r);
+      this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      this.lineTo(x+r,y+h);
+      this.quadraticCurveTo(x,y+h,x,y+h-r);
+      this.lineTo(x,y+r);
+      this.quadraticCurveTo(x,y,x+r,y);
+    };
+  }
+  setupInput();
+  initGame();
+  requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
